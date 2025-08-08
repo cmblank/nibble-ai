@@ -1,4 +1,4 @@
-# nibble_fresh
+# nibble_ai
 
 A new Flutter project.
 
