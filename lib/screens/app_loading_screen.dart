@@ -59,6 +59,17 @@ class _AppLoadingScreenState extends State<AppLoadingScreen> with SingleTickerPr
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Helping you make food happen',
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 32),
                 const CircularProgressIndicator(
                   color: Colors.white,
