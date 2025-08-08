@@ -1,4 +1,4 @@
--- Nibble Fresh App Database Schema - Complete Clean Version
+-- Nibble AI App Database Schema - Complete Clean Version
 -- Copy and paste this entire script into your Supabase SQL Editor and run it
 
 -- Drop existing tables if they exist (clean slate)
