@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/profile_storage.dart';
+import '../config/app_colors.dart';
 import 'onboarding_screen.dart';
 import 'achievements_screen.dart';
 import 'chat_screen.dart';
@@ -11,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFC),
+      backgroundColor: AppColors.creamWhisk,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -68,7 +69,7 @@ class HomeScreen extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF059669),
+                color: AppColors.gardenHerb,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Center(
@@ -76,13 +77,12 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Nibble Home',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2937),
-              ),
+              ).copyWith(color: AppColors.deepRoast),
             ),
           ],
         ),
@@ -98,9 +98,9 @@ class HomeScreen extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
+                  color: AppColors.creamWhisk,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 1),
+                  border: Border.all(color: AppColors.goldenCrust, width: 1),
                 ),
                 child: const Center(
                   child: Text('🏆', style: TextStyle(fontSize: 18)),
@@ -115,9 +115,9 @@ class HomeScreen extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF059669),
+                  color: AppColors.gardenHerb,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+                  border: Border.all(color: AppColors.goldenCrust, width: 2),
                 ),
                 child: const Center(
                   child: Text('👤', style: TextStyle(fontSize: 18, color: Colors.white)),
@@ -135,11 +135,11 @@ class HomeScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.creamWhisk,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.deepRoast.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -151,7 +151,7 @@ class HomeScreen extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
+              color: AppColors.goldenCrust,
               borderRadius: BorderRadius.circular(25),
             ),
             child: const Center(
@@ -159,24 +159,22 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Good evening, Chef!',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
+                  ).copyWith(color: AppColors.deepRoast),
                 ),
                 Text(
                   'Ready to create something delicious?',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF6B7280),
-                  ),
+                  ).copyWith(color: AppColors.gardenHerb),
                 ),
               ],
             ),
@@ -184,7 +182,7 @@ class HomeScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6),
+              color: AppColors.flameOrange,
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(Icons.arrow_forward, color: Colors.white, size: 16),

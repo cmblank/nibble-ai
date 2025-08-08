@@ -78,7 +78,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.buttonColor,
+  backgroundColor: AppColors.gardenHerb,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -190,7 +190,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   onPressed: _isLoading ? null : _authenticate,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: AppColors.darkTeal,
+                    foregroundColor: AppColors.deepRoast,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -202,7 +202,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            color: AppColors.darkTeal,
+                            color: AppColors.deepRoast,
                             strokeWidth: 2,
                           ),
                         )
@@ -210,8 +210,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           _isSignUp ? 'Start Cooking!' : 'Let\'s Cook!',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.darkTeal,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.deepRoast,
                           ),
                         ),
                 ),

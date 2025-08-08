@@ -14,7 +14,7 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: AppColors.cream,
+            backgroundColor: AppColors.creamWhisk,
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -26,8 +26,8 @@ class AuthWrapper extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.primaryOrange.withOpacity(0.1),
-                          AppColors.primaryTeal.withOpacity(0.1),
+                          AppColors.nibbleRed.withOpacity(0.1),
+                          AppColors.gardenHerb.withOpacity(0.1),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -51,13 +51,13 @@ class AuthWrapper extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   CircularProgressIndicator(
-                    color: AppColors.primaryOrange,
+                    color: AppColors.nibbleRed,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Preparing your kitchen...',
                     style: TextStyle(
-                      color: AppColors.mediumGray,
+                      color: AppColors.gardenHerb,
                       fontSize: 16,
                     ),
                   ),

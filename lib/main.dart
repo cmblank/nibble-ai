@@ -1,3 +1,4 @@
+import 'screens/app_loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
@@ -43,8 +44,33 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const AuthWrapper(),
+      home: const _InitialLoader(),
       debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+
+class _InitialLoader extends StatefulWidget {
+  const _InitialLoader();
+
+  @override
+  State<_InitialLoader> createState() => _InitialLoaderState();
+}
+
+class _InitialLoaderState extends State<_InitialLoader> {
+  @override
+  void initState() {
+    super.initState();
+  Future.delayed(const Duration(seconds: 5), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const AuthWrapper()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const AppLoadingScreen();
   }
 }

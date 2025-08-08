@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/app_colors.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -26,7 +27,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+            backgroundColor: AppColors.creamWhisk,
       body: SafeArea(
         child: Column(
           children: [

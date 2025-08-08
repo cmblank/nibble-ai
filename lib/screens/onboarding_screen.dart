@@ -1,3 +1,4 @@
+import '../config/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../utils/profile_storage.dart';
 
@@ -128,12 +129,12 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     }
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFC),
+      backgroundColor: AppColors.creamWhisk,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+  backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF374151)),
+          icon: Icon(Icons.arrow_back, color: AppColors.deepRoast),
           onPressed: _previousStep,
         ),
         actions: [
@@ -141,7 +142,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
             onPressed: _saveAndFinish,
             child: const Text(
               'Skip',
-              style: TextStyle(color: Color(0xFF6B7280)),
+              style: TextStyle(color: AppColors.gardenHerb),
             ),
           ),
         ],
@@ -154,8 +155,8 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
             LinearProgressIndicator(
               value: currentStep / 8,
               minHeight: 6,
-              backgroundColor: const Color(0xFFE5E7EB),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
+              backgroundColor: AppColors.goldenCrust,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.gardenHerb),
             ),
             const SizedBox(height: 32),
             
@@ -175,20 +176,19 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                   child: Text(
                     'Back',
                     style: TextStyle(
-                      color: currentStep > 1 ? const Color(0xFF6B7280) : Colors.transparent,
+                      color: currentStep > 1 ? AppColors.gardenHerb : Colors.transparent,
                     ),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: _canProceed() ? (currentStep == 7 ? _saveAndFinish : _nextStep) : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF059669),
+                    backgroundColor: AppColors.gardenHerb,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
                   ),
                   child: Text(currentStep == 7 ? 'Complete Setup' : 'Continue'),
                 ),
@@ -202,7 +202,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
 
   Widget _buildWelcomeScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFC),
+      backgroundColor: AppColors.creamWhisk,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
@@ -215,11 +215,11 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF059669),
+                  color: AppColors.gardenHerb,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: AppColors.deepRoast.withOpacity(0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -392,7 +392,10 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
-                    child: const Text('Continue Cooking Journey', style: TextStyle(fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Continue Cooking Journey',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
                   ),
                 ],
               ),
