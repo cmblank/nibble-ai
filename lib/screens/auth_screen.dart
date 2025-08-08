@@ -91,8 +91,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   // Chef Squirrel Mascot
                   Image.asset(
                     'assets/images/chef_mascot.png',
-                    width: 200,
-                    height: 200,
+                    width: 300,
+                    height: 300,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       // Fallback to text if image not found
@@ -104,10 +104,10 @@ class _AuthScreenState extends State<AuthScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 0),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
               
               // Welcome Text
               Text(
@@ -118,7 +118,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 _isSignUp 
                     ? 'Let\'s cook up something amazing together!'
@@ -129,7 +129,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
               
               // Email Field
               TextField(

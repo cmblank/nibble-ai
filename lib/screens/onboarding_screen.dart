@@ -225,21 +225,12 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                     ),
                   ],
                 ),
-                child: const Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Chef hat
-                    Positioned(
-                      top: 15,
-                      child: Text('👨‍🍳', style: TextStyle(fontSize: 40)),
-                    ),
-                    // Leaf accent
-                    Positioned(
-                      bottom: 15,
-                      right: 15,
-                      child: Text('🍃', style: TextStyle(fontSize: 20)),
-                    ),
-                  ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.asset(
+                    'assets/images/chef_mascot.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(height: 32),

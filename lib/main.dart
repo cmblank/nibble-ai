@@ -23,27 +23,27 @@ class MyApp extends StatelessWidget {
       title: 'Nibble',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFE85A4F), // Warm coral/orange from the chef
-          primary: const Color(0xFFE85A4F), // Main coral orange
-          secondary: const Color(0xFF4A9B8F), // Teal green
-          tertiary: const Color(0xFFF4A261), // Lighter orange accent
-          surface: const Color(0xFFFFF8F3), // Warm cream
-          background: const Color(0xFFFFF8F3), // Warm cream background
+          seedColor: const Color(0xFFE85A4F),
+          primary: const Color(0xFFE85A4F),
+          secondary: const Color(0xFF4A9B8F),
+          tertiary: const Color(0xFFF4A261),
+          surface: const Color(0xFFFFF8F3),
+          background: const Color(0xFFFFF8F3),
         ),
         useMaterial3: true,
-        fontFamily: 'System',
+        fontFamily: 'Manrope',
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF4A9B8F), // Teal for app bars
-          foregroundColor: Color(0xFFFFF8F3), // Cream text
+          backgroundColor: Color(0xFF4A9B8F),
+          foregroundColor: Color(0xFFFFF8F3),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFE85A4F), // Coral buttons
-            foregroundColor: const Color(0xFFFFF8F3), // Cream text
+            backgroundColor: const Color(0xFFE85A4F),
+            foregroundColor: const Color(0xFFFFF8F3),
           ),
         ),
       ),
-      home: const AuthWrapper(), // Use AuthWrapper for authentication flow
+      home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,
     );
   }
