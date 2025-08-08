@@ -1,4 +1,4 @@
-package com.example.nibble_fresh
+package com.example.nibble_ai
 
 import io.flutter.embedding.android.FlutterActivity
 

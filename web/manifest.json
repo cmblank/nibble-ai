@@ -1,11 +1,11 @@
 {
-    "name": "nibble_fresh",
-    "short_name": "nibble_fresh",
+    "name": "Nibble AI",
+    "short_name": "Nibble AI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#277F6D",
+    "theme_color": "#277F6D",
+    "description": "A Flutter cooking app with AI-powered recipe suggestions and Supabase backend.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
