@@ -27,6 +27,18 @@ class SupabaseService {
     );
   }
   
+  Future<bool> signInWithGoogle() async {
+    try {
+      return await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.nibbleai://auth-callback',
+      );
+    } catch (e) {
+      print('Error signing in with Google: $e');
+      return false;
+    }
+  }
+  
   static Future<void> signOut() async {
     await _client.auth.signOut();
   }

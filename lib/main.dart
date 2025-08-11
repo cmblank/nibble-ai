@@ -29,7 +29,6 @@ class MyApp extends StatelessWidget {
           secondary: const Color(0xFF4A9B8F),
           tertiary: const Color(0xFFF4A261),
           surface: const Color(0xFFFFF8F3),
-          background: const Color(0xFFFFF8F3),
         ),
         useMaterial3: true,
         fontFamily: 'Manrope',
@@ -62,11 +61,16 @@ class _InitialLoaderState extends State<_InitialLoader> {
   @override
   void initState() {
     super.initState();
-  Future.delayed(const Duration(seconds: 5), () {
+    _navigateAfterDelay();
+  }
+
+  void _navigateAfterDelay() async {
+    await Future.delayed(const Duration(seconds: 5));
+    if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const AuthWrapper()),
       );
-    });
+    }
   }
 
   @override
