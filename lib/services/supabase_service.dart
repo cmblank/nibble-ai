@@ -27,6 +27,33 @@ class SupabaseService {
     );
   }
   
+  // Request a password reset email. The redirectTo should point to your app's URL scheme
+  // so that clicking the link opens the app and triggers AuthChangeEvent.passwordRecovery.
+  static Future<void> resetPasswordForEmail({
+    required String email,
+    String redirectTo = 'io.supabase.nibbleai://auth-callback',
+  }) async {
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: redirectTo,
+    );
+  }
+  
+  // After passwordRecovery event, update the user's password.
+  static Future<bool> updatePassword({
+    required String newPassword,
+  }) async {
+    try {
+      final res = await _client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      return res.user != null;
+    } catch (e) {
+      print('Error updating password: $e');
+      return false;
+    }
+  }
+  
   Future<bool> signInWithGoogle() async {
     try {
       return await Supabase.instance.client.auth.signInWithOAuth(

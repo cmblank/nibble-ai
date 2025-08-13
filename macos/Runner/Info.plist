@@ -28,5 +28,18 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+    
+	<!-- Custom URL scheme for Supabase OAuth callback -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>io.supabase.nibbleai</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.supabase.nibbleai</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

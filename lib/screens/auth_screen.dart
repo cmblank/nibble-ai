@@ -14,6 +14,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
   bool _isLoading = false;
+  final _supabaseService = SupabaseService();
 
   @override
   void dispose() {
@@ -75,177 +76,290 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      final ok = await _supabaseService.signInWithGoogle();
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google sign-in was cancelled or failed.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google sign-in error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  backgroundColor: AppColors.gardenHerb,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Nibble Branding Section
-              Column(
+      backgroundColor: AppColors.gardenHerb,
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.only(
+          bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Simple full-width header (no cropping, no bleed)
+            Image.asset(
+              'assets/images/nibble-header.png',
+              fit: BoxFit.fitWidth,
+              width: double.infinity,
+              alignment: Alignment.topCenter,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+
+            // Padded form content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Chef Squirrel Mascot
-                  Image.asset(
-                    'assets/images/chef_mascot.png',
-                    width: 300,
-                    height: 300,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback to text if image not found
-                      return const Center(
-                        child: Text(
-                          'Nibble Chef', 
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 0),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Welcome Text
-              Text(
-                _isSignUp ? 'Join the Kitchen!' : 'Welcome Back, Chef!',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _isSignUp 
-                    ? 'Let\'s cook up something amazing together!'
-                    : 'Ready to whip up your next culinary adventure?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              
-              // Email Field
-              TextField(
-                controller: _emailController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white, width: 2),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              
-              // Password Field
-              TextField(
-                controller: _passwordController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white, width: 2),
-                  ),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
-              
-              // Auth Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _authenticate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.deepRoast,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: _isLoading
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: AppColors.deepRoast,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          _isSignUp ? 'Start Cooking!' : 'Let\'s Cook!',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.deepRoast,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Toggle Auth Mode
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                  // Welcome Text
                   Text(
-                    _isSignUp 
-                        ? 'Already a chef? '
-                        : 'New to the kitchen? ',
-                    style: TextStyle(color: Colors.white70),
+                    _isSignUp ? 'Join Nibble' : 'Welcome Back, Chef!',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isSignUp = !_isSignUp;
-                      });
-                    },
-                    child: Text(
-                      _isSignUp ? 'Welcome Back!' : 'Join Us!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                  const SizedBox(height: 4),
+                  Text(
+                    _isSignUp
+                        ? 'Let\'s get you cooking.'
+                        : 'Helping you make food happen',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Email Field
+                  TextField(
+                    controller: _emailController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white, width: 2),
+                      ),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password Field
+                  TextField(
+                    controller: _passwordController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white, width: 2),
+                      ),
+                    ),
+                    obscureText: true,
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: 8),
+                  if (!_isSignUp)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                final email = _emailController.text.trim();
+                                if (email.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Enter your email to reset your password.')),
+                                  );
+                                  return;
+                                }
+                                setState(() => _isLoading = true);
+                                try {
+                                  await SupabaseService.resetPasswordForEmail(email: email);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Password reset email sent. Check your inbox.')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Reset error: $e')),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted) setState(() => _isLoading = false);
+                                }
+                              },
+                        child: const Text(
+                          'Forgot password?',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+
+                  // Auth Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _authenticate,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.deepRoast,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: _isLoading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: AppColors.deepRoast,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              _isSignUp ? 'Create Account' : 'Sign In',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.deepRoast,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Divider with OR
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Divider(color: Colors.white54, thickness: 2),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('or', style: TextStyle(color: Colors.white70)),
+                      ),
+                      const Expanded(
+                        child: Divider(color: Colors.white54, thickness: 2),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Google Sign-In Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : _signInWithGoogle,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black87,
+                        side: const BorderSide(color: Colors.white, width: 0),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/Google_G_logo.png',
+                            width: 22,
+                            height: 22,
+                            errorBuilder: (context, error, stack) => const SizedBox(width: 0, height: 0),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Sign In with Google',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // Toggle Auth Mode
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isSignUp
+                            ? 'Already cooking with Nibble? '
+                            : 'New to Nibble? ',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _isSignUp = !_isSignUp;
+                          });
+                        },
+                        child: Text(
+                          _isSignUp ? 'Sign In' : 'Create Account',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

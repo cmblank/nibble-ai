@@ -1,8 +1,9 @@
-import 'screens/app_loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
 import 'auth_wrapper.dart';
+import 'services/deep_link_logger.dart';
+import 'screens/app_loading_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,6 +11,16 @@ void main() async {
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
+  );
+
+  // Start deep link logging to verify password recovery links on macOS
+  await DeepLinkLogger.init();
+
+  // Log auth changes early to verify deep links (e.g., passwordRecovery)
+  // are received when launching from email links on macOS.
+  // ignore: avoid_print
+  Supabase.instance.client.auth.onAuthStateChange.listen(
+    (data) => print('Auth state: ${data.event}, hasSession=${data.session != null}')
   );
 
   runApp(const MyApp());
@@ -43,38 +54,36 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const _InitialLoader(),
+      // Show loading screen first, then route into AuthWrapper.
+      home: const _SplashGate(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-
-class _InitialLoader extends StatefulWidget {
-  const _InitialLoader();
+// Simple splash gate that shows the loading screen briefly, then goes to AuthWrapper.
+class _SplashGate extends StatefulWidget {
+  const _SplashGate();
 
   @override
-  State<_InitialLoader> createState() => _InitialLoaderState();
+  State<_SplashGate> createState() => _SplashGateState();
 }
 
-class _InitialLoaderState extends State<_InitialLoader> {
+class _SplashGateState extends State<_SplashGate> {
   @override
   void initState() {
     super.initState();
-    _navigateAfterDelay();
-  }
-
-  void _navigateAfterDelay() async {
-    await Future.delayed(const Duration(seconds: 5));
-    if (mounted) {
+    // Give the loading animation a moment, then continue.
+  Future.delayed(const Duration(milliseconds: 2500), () {
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const AuthWrapper()),
       );
-    }
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const AppLoadingScreen();
-  }
+  Widget build(BuildContext context) => const AppLoadingScreen();
 }
+
+// AuthWrapper listens to Supabase auth state and routes accordingly.

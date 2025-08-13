@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_app.dart';
+import 'screens/reset_password_screen.dart';
 import 'config/app_colors.dart';
 
 class AuthWrapper extends StatelessWidget {
@@ -65,6 +66,11 @@ class AuthWrapper extends StatelessWidget {
               ),
             ),
           );
+        }
+
+        if (snapshot.hasData && snapshot.data!.event == AuthChangeEvent.passwordRecovery) {
+          // Navigate to reset password when recovering
+          return const ResetPasswordScreen();
         }
 
         final session = snapshot.hasData ? snapshot.data!.session : null;
