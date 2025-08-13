@@ -24,6 +24,7 @@ class CookingProfileOnboarding extends StatefulWidget {
 
 class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   int currentStep = 0;
+  final ScrollController _scrollController = ScrollController();
   
   // Profile data
   String userName = '';
@@ -185,6 +186,20 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     }
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
+  }
+
   void _loadInitialData() {
     final data = widget.initialData!;
     userName = data['name'] ?? '';
@@ -200,12 +215,14 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     setState(() {
       currentStep = (currentStep + 1).clamp(0, 6);
     });
+  _scrollToTop();
   }
 
   void _previousStep() {
     setState(() {
       currentStep = (currentStep - 1).clamp(0, 6);
     });
+  _scrollToTop();
   }
 
   @override
@@ -305,6 +322,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -452,6 +470,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -539,6 +558,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -630,6 +650,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -681,6 +702,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
