@@ -7,6 +7,7 @@ import '../widgets/select_card.dart';
 import '../widgets/stepper_header.dart';
 import '../widgets/multi_select_pills.dart';
 import '../widgets/days_per_week_slider_card.dart';
+import '../widgets/toggle.dart';
 
 class CookingProfileOnboarding extends StatefulWidget {
   final VoidCallback onFinish;
@@ -36,6 +37,147 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   String selectedBudget = '';
   // Step 2: Tools & Skills
   List<String> selectedTools = [];
+
+  // Step 4: Pantry Snapshot selections
+  // Options
+  final List<String> proteinOptions = const [
+    'Chicken breast',
+    'Ground beef',
+    'Pork chops',
+    'Chicken thigh',
+    'Ground turkey',
+    'Steak',
+    'Tofu',
+    'Plant-based protein',
+  ];
+
+  final List<String> veggieOptions = const [
+    'Onion',
+    'Tomatoes',
+    'Zucchini',
+    'Broccoli',
+    'Green beans',
+    'Corn',
+    'Carrots',
+    'Garlic',
+    'Bell Pepper',
+    'Beets',
+    'Lettuce',
+    'Spinach',
+  ];
+
+  final List<String> fruitOptions = const [
+    'Apples',
+    'Bananas',
+    'Lemons',
+    'Limes',
+    'Oranges',
+    'Strawberries',
+    'Grapes',
+    'Pears',
+    'Blueberries',
+  ];
+
+  final List<String> pantryStapleOptions = const [
+    'Olive Oil',
+    'Sugar',
+    'Canned beans',
+    'Canned tuna',
+    'Flour',
+    'Parsley',
+    'Oregano',
+    'Basil',
+    'Onion powder',
+    'Garlic powder',
+    'Paprika',
+    'Cumin',
+    'Chili powder',
+    'Salt',
+    'Pepper',
+  ];
+
+  final List<String> grainsPastaOptions = const [
+    'Rice',
+    'Spaghetti',
+    'Pasta',
+    'Quinoa',
+    'Oats',
+    'Couscous',
+  ];
+
+  final List<String> dairyAltOptions = const [
+    'Eggs',
+    'Milk',
+    'Greek yogurt',
+    'Shredded cheese',
+    'Oat Milk',
+    'Almond Milk',
+    'Butter',
+    'Coconut Milk',
+    'Ghee',
+    'Parmesan cheese',
+  ];
+
+  final List<String> condimentOptions = const [
+    'Soy sauce',
+    'Hot sauce',
+    'Mustard',
+    'Mayonnaise',
+    'Ketchup',
+    'Honey',
+    'Peanut butter',
+    'Sriracha',
+    'Jam',
+  ];
+
+  // Defaults (pre-selected common staples per mock)
+  List<String> selectedProteins = [
+    'Chicken breast',
+    'Ground turkey',
+    'Steak',
+  ];
+  List<String> selectedVeggies = [
+    'Onion',
+    'Zucchini',
+    'Broccoli',
+    'Corn',
+    'Carrots',
+    'Garlic',
+    'Bell Pepper',
+    'Lettuce',
+  ];
+  List<String> selectedFruits = [
+    'Lemons',
+    'Limes',
+    'Grapes',
+  ];
+  List<String> selectedPantryStaples = [
+    'Olive Oil',
+    'Sugar',
+    'Flour',
+    'Cumin',
+    'Chili powder',
+    'Salt',
+    'Pepper',
+  ];
+  List<String> selectedGrainsPasta = [
+    'Rice',
+    'Spaghetti',
+    'Pasta',
+    'Couscous',
+  ];
+  List<String> selectedDairyAlt = [
+    'Eggs',
+    'Milk',
+    'Shredded cheese',
+    'Butter',
+  ];
+  List<String> selectedCondiments = [
+    'Soy sauce',
+    'Ketchup',
+    'Honey',
+    'Peanut butter',
+  ];
 
   // Step 1: Kitchen Life
   int cookNightsCurrent = 0; // 0-7
@@ -67,37 +209,44 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     'None',
   ];
 
+  // Step 3 options (updated to match mock)
   final List<String> dietaryPreferences = [
     'Vegetarian',
     'Vegan',
     'Pescatarian',
-    'Keto',
+    'Keto / Low-carb',
+    'Gluten-free',
+    'Dairy-free',
     'Paleo',
-    'Mediterranean',
-    'Low-carb',
-    'No restrictions'
+    'Whole30',
+    'High Protein',
+    'Low sugar',
   ];
 
   final List<String> commonAllergies = [
-    'Nuts',
-    'Dairy',
-    'Gluten',
     'Shellfish',
-    'Eggs',
+    'Peanuts',
+    'Tree nuts',
     'Soy',
-    'Fish',
-    'None'
+    'Eggs',
+    'Mushrooms',
+    'Cilantro',
+    'Other',
+    'Pork',
   ];
 
   final List<String> cuisineTypes = [
+    'Any',
     'Italian',
     'Mexican',
     'Asian',
     'Mediterranean',
-    'American',
     'Indian',
+    'Middle Eastern',
+    'American',
     'French',
-    'Thai'
+    'Latin American',
+    'African',
   ];
 
   final List<String> cookingTimes = [
@@ -108,11 +257,11 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     'I have all day!'
   ];
 
-  final List<String> budgetRanges = [
-    'Very budget-friendly (\$)',
-    'Moderate (\$\$)',
-    'Higher-end (\$\$\$)',
-    'No budget concerns'
+  // Step 3: budget levels (title - description)
+  final List<String> budgetLevels = [
+    'Low-budget - Keep costs down for everyday cooking',
+    'Moderate - Comfortable weekly shopping',
+    'Treat-yourself - Occasional splurges or premium ingredients',
   ];
 
   // Options for Step 1 UI
@@ -166,7 +315,6 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     'Manage blood sugar',
     'Reduce takeout',
     'Learn new recipes',
-    'Other',
   ];
 
   final List<String> blockerOptions = const [
@@ -175,8 +323,57 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     "Don't know what to make",
     'Hate grocery shopping',
     'Lack of confidence',
-    'Other',
   ];
+
+  // Step 5: Staying in Sync
+  // Support up to two shopping days
+  List<String> shoppingDays = [];
+  // Legacy single-day fields kept for backward compatibility in storage
+  String shoppingDay = '';
+  String shoppingDayCustom = '';
+  final List<String> dayOfWeekOptions = const [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+  // single-select via chips; no additional state needed
+  List<String> shoppingStores = [];
+  final List<String> storeOptions = const [
+    'Walmart',
+    'Target',
+    'Costco',
+    'Kroger',
+    'Whole Foods',
+    'Sprouts',
+    "Trader Joe’s",
+    'Safeway',
+    'Aldi',
+    'Publix',
+  ];
+  String checkInFrequency = '';
+  final List<Map<String, String>> frequencyOptions = const [
+    {
+      'title': 'Every day',
+      'desc': "Keep the ideas coming, I'm here for it",
+    },
+    {
+      'title': 'A few times a week',
+      'desc': "A few times a week, when it'll really help.",
+    },
+    {
+      'title': 'Rarely',
+      'desc': 'Only for the important stuff',
+    },
+    {
+      'title': 'Only when you ask',
+      'desc': "I’ll be available when you call me in",
+    },
+  ];
+  bool simpleSuppersEnabled = true;
 
   @override
   void initState() {
@@ -209,6 +406,39 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     selectedCuisines = List<String>.from(data['cuisines'] ?? []);
     selectedCookingTime = data['cookingTime'] ?? '';
     selectedBudget = data['budget'] ?? '';
+    // Step 5
+    // New multi-day support (up to 2). Load new field first, else migrate from legacy fields.
+    final List<String> loadedShoppingDays = List<String>.from(data['shoppingDays'] ?? const []);
+    if (loadedShoppingDays.isNotEmpty) {
+      shoppingDays = loadedShoppingDays.take(2).toList();
+    } else {
+      shoppingDay = data['shoppingDay'] ?? shoppingDay;
+      shoppingDayCustom = data['shoppingDayCustom'] ?? shoppingDayCustom;
+      // migrate old "Custom" selection to a concrete day
+      if (shoppingDay == 'Custom' && shoppingDayCustom.isNotEmpty) {
+        shoppingDay = shoppingDayCustom;
+      }
+      if (shoppingDay.isNotEmpty) {
+        shoppingDays = [shoppingDay];
+      }
+    }
+    // Keep legacy single-day fields aligned to the first selection for backward compat
+    shoppingDay = shoppingDays.isNotEmpty ? shoppingDays.first : '';
+    shoppingDayCustom = shoppingDay;
+    shoppingStores = List<String>.from(data['shoppingStores'] ?? shoppingStores);
+    checkInFrequency = data['checkInFrequency'] ?? checkInFrequency;
+    simpleSuppersEnabled = data['simpleSuppersEnabled'] ?? simpleSuppersEnabled;
+    // Pantry (optional)
+    final pantry = data['pantry'];
+    if (pantry is Map) {
+      selectedProteins = List<String>.from(pantry['proteins'] ?? selectedProteins);
+      selectedVeggies = List<String>.from(pantry['veggies'] ?? selectedVeggies);
+      selectedFruits = List<String>.from(pantry['fruits'] ?? selectedFruits);
+      selectedPantryStaples = List<String>.from(pantry['pantryStaples'] ?? selectedPantryStaples);
+      selectedGrainsPasta = List<String>.from(pantry['grainsPasta'] ?? selectedGrainsPasta);
+      selectedDairyAlt = List<String>.from(pantry['dairyAlternatives'] ?? selectedDairyAlt);
+      selectedCondiments = List<String>.from(pantry['condiments'] ?? selectedCondiments);
+    }
   }
 
   void _nextStep() {
@@ -406,7 +636,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       },
                     ),
                     _sectionRule(),
-                    _sectionTitle('What’s driving you to cook more?'),
+                    _sectionTitle('What’s driving you to cook?'),
                     const SizedBox(height: 16),
                     MultiSelectPills(
                       options: motivationOptions,
@@ -528,7 +758,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    _sectionRule(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -565,19 +795,20 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
               const StepperHeader(
                 step: 3,
                 totalSteps: 5,
-                title: 'Food Preferences',
-                subtitle: 'Set the guardrails for great recommendations',
+                title: 'Food Preferences & Styles',
+                subtitle: 'Help me tailor meals to your tastes and needs.',
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle('Any dietary preferences?'),
+                    _sectionTitle('Eating style'),
                     const SizedBox(height: 16),
                     MultiSelectPills(
                       options: dietaryPreferences,
                       selectedOptions: selectedDiets,
+                      showOtherInput: true,
                       onSelectionChanged: (diet) {
                         setState(() {
                           if (selectedDiets.contains(diet)) {
@@ -589,7 +820,49 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       },
                     ),
                     _sectionRule(),
-                    _sectionTitle('Any food allergies or restrictions?'),
+                    _sectionTitle('Budget comfort'),
+                    const SizedBox(height: 16),
+                    ...budgetLevels.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final level = entry.value;
+                      final isLast = idx == budgetLevels.length - 1;
+                      final parts = level.split(' - ');
+                      final title = parts.isNotEmpty ? parts.first : level;
+                      final description = parts.length > 1 ? parts.sublist(1).join(' - ') : '';
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                        child: SelectCard(
+                          title: title,
+                          description: description,
+                          selected: selectedBudget == title || selectedBudget == level,
+                          onTap: () => setState(() => selectedBudget = title),
+                        ),
+                      );
+                    }),
+                    _sectionRule(),
+                    _sectionTitle('Favorite cuisines'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: cuisineTypes,
+                      selectedOptions: selectedCuisines,
+                      showOtherInput: true,
+                      onSelectionChanged: (cuisine) {
+                        setState(() {
+                          if (cuisine == 'Any') {
+                            selectedCuisines = selectedCuisines.contains('Any') ? [] : ['Any'];
+                          } else {
+                            selectedCuisines.remove('Any');
+                            if (selectedCuisines.contains(cuisine)) {
+                              selectedCuisines.remove(cuisine);
+                            } else {
+                              selectedCuisines.add(cuisine);
+                            }
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('Avoid & allergies'),
                     const SizedBox(height: 16),
                     MultiSelectPills(
                       options: commonAllergies,
@@ -600,22 +873,6 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                             selectedAllergies.remove(allergy);
                           } else {
                             selectedAllergies.add(allergy);
-                          }
-                        });
-                      },
-                    ),
-                    _sectionRule(),
-                    _sectionTitle('What cuisines make you excited to cook?'),
-                    const SizedBox(height: 16),
-                    MultiSelectPills(
-                      options: cuisineTypes,
-                      selectedOptions: selectedCuisines,
-                      onSelectionChanged: (cuisine) {
-                        setState(() {
-                          if (selectedCuisines.contains(cuisine)) {
-                            selectedCuisines.remove(cuisine);
-                          } else {
-                            selectedCuisines.add(cuisine);
                           }
                         });
                       },
@@ -644,7 +901,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     );
   }
 
-  // Step 4: Pantry Snapshot (temporary content reused from time preferences)
+  // Step 4: Pantry Snapshot
   Widget _buildPantrySnapshotStep() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -658,20 +915,130 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 step: 4,
                 totalSteps: 5,
                 title: 'Pantry Snapshot',
-                subtitle: 'A quick sense of your routine helps planning',
+                subtitle: 'Choose your staples now, edit anytime',
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle('How much time do you usually have for cooking?'),
-                    const SizedBox(height: 16),
-                    ...cookingTimes.map((time) => _buildOptionTile(
-                          time,
-                          selectedCookingTime == time,
-                          () => setState(() => selectedCookingTime = time),
-                        )),
+                    _sectionTitle('🍖 Proteins'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: proteinOptions,
+                      selectedOptions: selectedProteins,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedProteins.contains(val)) {
+                            selectedProteins.remove(val);
+                          } else {
+                            selectedProteins.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('🥦 Veggies'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: veggieOptions,
+                      selectedOptions: selectedVeggies,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedVeggies.contains(val)) {
+                            selectedVeggies.remove(val);
+                          } else {
+                            selectedVeggies.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('🍎 Fruit'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: fruitOptions,
+                      selectedOptions: selectedFruits,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedFruits.contains(val)) {
+                            selectedFruits.remove(val);
+                          } else {
+                            selectedFruits.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('🧂 Pantry staples'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: pantryStapleOptions,
+                      selectedOptions: selectedPantryStaples,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedPantryStaples.contains(val)) {
+                            selectedPantryStaples.remove(val);
+                          } else {
+                            selectedPantryStaples.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('🌾 Grains & pasta'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: grainsPastaOptions,
+                      selectedOptions: selectedGrainsPasta,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedGrainsPasta.contains(val)) {
+                            selectedGrainsPasta.remove(val);
+                          } else {
+                            selectedGrainsPasta.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('🧀 Dairy & alternatives'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: dairyAltOptions,
+                      selectedOptions: selectedDairyAlt,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedDairyAlt.contains(val)) {
+                            selectedDairyAlt.remove(val);
+                          } else {
+                            selectedDairyAlt.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('🥫 Condiments, sauces & spreads'),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: condimentOptions,
+                      selectedOptions: selectedCondiments,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (selectedCondiments.contains(val)) {
+                            selectedCondiments.remove(val);
+                          } else {
+                            selectedCondiments.add(val);
+                          }
+                        });
+                      },
+                    ),
                     _sectionRule(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -710,29 +1077,163 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 step: 5,
                 totalSteps: 5,
                 title: 'Staying in Sync',
-                subtitle: "We'll help keep plans and preferences up to date",
+                subtitle: 'Want me to help you stick with your cooking goals?',
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _sectionTitle('When do you usually shop for groceries?'),
+                    const SizedBox(height: 8),
                     const Text(
-                      "We'll add calendar integrations and reminders here soon. For now, you can finish setup and start cooking!",
+                      'Pick up to two days',
                       style: TextStyle(
                         fontFamily: 'Manrope',
-                        fontSize: 16,
-                        height: 1.5,
-                        color: Color(0xFF374151),
+                        fontSize: 13,
+                        color: Color(0xFF6B7280),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
+                    MultiSelectPills(
+                      options: dayOfWeekOptions,
+                      selectedOptions: shoppingDays,
+                      onSelectionChanged: (day) {
+                        setState(() {
+                          if (shoppingDays.contains(day)) {
+                            shoppingDays.remove(day);
+                          } else {
+                            if (shoppingDays.length < 2) {
+                              shoppingDays.add(day);
+                            } else {
+                              // Replace the oldest selection with the new one to keep it simple
+                              shoppingDays.removeAt(0);
+                              shoppingDays.add(day);
+                            }
+                          }
+                          // keep legacy fields aligned to first selection for compat
+                          shoppingDay = shoppingDays.isNotEmpty ? shoppingDays.first : '';
+                          shoppingDayCustom = shoppingDay;
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('Where do you usually shop?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: storeOptions,
+                      selectedOptions: shoppingStores,
+                      showOtherInput: true,
+                      onSelectionChanged: (store) {
+                        setState(() {
+                          if (shoppingStores.contains(store)) {
+                            shoppingStores.remove(store);
+                          } else {
+                            shoppingStores.add(store);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+
+                    _sectionTitle('How often should I check in?'),
+                    const SizedBox(height: 16),
+                    ...frequencyOptions.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final f = entry.value;
+                      final isLast = idx == frequencyOptions.length - 1;
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                        child: SelectCard(
+                          title: f['title']!,
+                          description: f['desc']!,
+                          selected: checkInFrequency == f['title'],
+                          onTap: () => setState(() => checkInFrequency = f['title']!),
+                        ),
+                      );
+                    }),
+                    // Low-energy nights card
+                    const SizedBox(height: 40),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF7ED),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFF4E5D3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Image.asset(
+                                'assets/images/nib-head.png',
+                                width: 32,
+                                height: 32,
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'For those low-energy nights…',
+                                  style: TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 40.0),
+                            child: const Text(
+                              "I’ll pop in with easy, no-fuss meal ideas you can make from what’s already here. No pressure — just a little nudge when you need it.",
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 14,
+                                height: 1.5,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          const Divider(height: 1, color: Color(0xFFE9DCCB)),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(left: 4.0),
+                                child: Text(
+                                  'Simple Suppers',
+                                  style: TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                ),
+                              ),
+                              Toggle(
+                                value: simpleSuppersEnabled,
+                                onChanged: (v) => setState(() => simpleSuppersEnabled = v),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    _sectionRule(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TertiaryButton(label: 'Back', onPressed: _previousStep),
                         PrimaryButton(
-                          label: 'Complete Setup',
+                          label: 'Save My Preferences',
                           onPressed: _saveAndFinish,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           fontSize: 16,
@@ -826,74 +1327,6 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   }
 
   // Helpers
-  Widget _buildOptionTile(String title, bool isSelected, VoidCallback onTap) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF059669).withOpacity(0.1) : Colors.white,
-            border: Border.all(
-              color: isSelected ? const Color(0xFF059669) : const Color(0xFFE5E7EB),
-              width: isSelected ? 2 : 1,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF059669).withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF059669) : Colors.transparent,
-                  border: Border.all(
-                    color: isSelected ? const Color(0xFF059669) : const Color(0xFF9CA3AF),
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: isSelected
-                    ? const Icon(Icons.check, color: Colors.white, size: 16)
-                    : null,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected ? const Color(0xFF059669) : const Color(0xFF374151),
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  
 
   Widget _sectionTitle(String title, [String? subtitle]) {
     return Column(
@@ -945,6 +1378,23 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
       'cuisines': selectedCuisines,
       'cookingTime': selectedCookingTime,
       'budget': selectedBudget,
+  // New multi-day support
+  'shoppingDays': shoppingDays,
+  // Legacy single-day fields for backward compatibility
+  'shoppingDay': shoppingDay,
+  'shoppingDayCustom': shoppingDayCustom,
+  'shoppingStores': shoppingStores,
+  'checkInFrequency': checkInFrequency,
+  'simpleSuppersEnabled': simpleSuppersEnabled,
+      'pantry': {
+        'proteins': selectedProteins,
+        'veggies': selectedVeggies,
+        'fruits': selectedFruits,
+        'pantryStaples': selectedPantryStaples,
+        'grainsPasta': selectedGrainsPasta,
+        'dairyAlternatives': selectedDairyAlt,
+        'condiments': selectedCondiments,
+      },
       // Step 1 fields
       'cookNightsCurrent': cookNightsCurrent,
       'cookNightsGoal': cookNightsGoal,

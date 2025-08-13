@@ -75,7 +75,10 @@ class _SelectionChipState extends State<SelectionChip>
   // spacer = restPadH*2 - (selPadLeft + selPadRight + icon + gap)
   final double compensationWidth =
     (restPadH * 2) - (selPadLeft + selPadRight + iconSize + gap);
-  final double trailingSpacer = compensationWidth > 0 ? compensationWidth : 0;
+  // Nudge spacer slightly smaller to avoid fractional overflows in tight wraps
+  final double trailingSpacer = compensationWidth > 0
+      ? (compensationWidth - 2).clamp(0, double.infinity)
+      : 0;
   // iconSpace no longer needed since we animate icon width from 0
 
     return MouseRegion(
@@ -104,6 +107,8 @@ class _SelectionChipState extends State<SelectionChip>
               ),
             ],
           ),
+          // Clip any sub-pixel overflow from animated internals to avoid debug stripes
+          clipBehavior: Clip.antiAlias,
           // Animate internals:
           // - color fade is handled by AnimatedContainer
           // - icon width grows from 0 -> 18 and fades in
@@ -170,31 +175,214 @@ class _SelectionChipState extends State<SelectionChip>
 }
 
 /// Multi-select pills group with Wrap layout.
-class MultiSelectPills extends StatelessWidget {
+class MultiSelectPills extends StatefulWidget {
   final List<String> options;
   final List<String> selectedOptions;
   final ValueChanged<String> onSelectionChanged;
+  final String otherLabel;
+  final bool enableOtherInput;
+  final String otherPlaceholder;
+  // When true, always show the inline "Other" text input even if otherLabel
+  // is not present in options. Useful when you want to remove the literal
+  // "Other" chip but keep the custom entry input.
+  final bool showOtherInput;
 
   const MultiSelectPills({
     super.key,
     required this.options,
     required this.selectedOptions,
     required this.onSelectionChanged,
+    this.otherLabel = 'Other',
+    this.enableOtherInput = true,
+  this.otherPlaceholder = 'Add other...',
+  this.showOtherInput = false,
   });
 
   @override
+  State<MultiSelectPills> createState() => _MultiSelectPillsState();
+}
+
+class _MultiSelectPillsState extends State<MultiSelectPills> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _submitCustom() {
+    final raw = _controller.text.trim();
+    if (raw.isEmpty) return;
+    if (!widget.selectedOptions.contains(raw)) {
+      widget.onSelectionChanged(raw);
+    }
+    _controller.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
+  final hasOther = widget.enableOtherInput &&
+    (widget.options.contains(widget.otherLabel) || widget.showOtherInput);
+    // Custom entries are those selected that aren't in the base options.
+    final customEntries = widget.selectedOptions
+        .where((s) => !widget.options.contains(s))
+        .toList(growable: false);
+
+    final List<Widget> children = [];
+
+    for (final option in widget.options) {
+      final isSelected = widget.selectedOptions.contains(option);
+      children.add(
+        SelectionChip(
+          label: option,
+          selected: isSelected,
+          onTap: () {
+            // If tapping the 'Other' chip and input is enabled, also focus the input.
+            widget.onSelectionChanged(option);
+            if (hasOther && option == widget.otherLabel) {
+              _focusNode.requestFocus();
+            }
+          },
+        ),
+      );
+    }
+
+    // Render custom chips after base options.
+    for (final custom in customEntries) {
+      children.add(
+        SelectionChip(
+          label: custom,
+          selected: true,
+          onTap: () => widget.onSelectionChanged(custom), // toggles off
+        ),
+      );
+    }
+
+    // Append inline input for custom entries if 'Other' is available.
+    if (hasOther) {
+      children.add(_OtherInlineInput(
+        controller: _controller,
+        focusNode: _focusNode,
+        placeholder: widget.otherPlaceholder,
+        onSubmitted: _submitCustom,
+      ));
+    }
+
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: options.map((option) {
-        final isSelected = selectedOptions.contains(option);
-        return SelectionChip(
-          label: option,
-          selected: isSelected,
-          onTap: () => onSelectionChanged(option),
-        );
-      }).toList(),
+      children: children,
+    );
+  }
+}
+
+class _OtherInlineInput extends StatefulWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onSubmitted;
+  final String placeholder;
+
+  const _OtherInlineInput({
+    required this.controller,
+    required this.focusNode,
+    required this.onSubmitted,
+    required this.placeholder,
+  });
+
+  @override
+  State<_OtherInlineInput> createState() => _OtherInlineInputState();
+}
+
+class _OtherInlineInputState extends State<_OtherInlineInput> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Colors matching SelectionChip rest/hover states
+    const restBg = Color(0xFFF9FAFB);
+    const restBorder = Color(0xFFF3F5F6);
+    const hoverBg = Color(0xFFF7FDFB);
+    const hoverBorder = Color(0xFF319B7B);
+
+    final Color bg = _hovered ? hoverBg : restBg;
+    final Color border = _hovered ? hoverBorder : restBorder;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.text,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => widget.focusNode.requestFocus(),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 120),
+          child: SizedBox(
+            height: 42, // match SelectionChip visual height with line-height rounding
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOutCubic,
+              decoration: ShapeDecoration(
+                color: bg,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(800),
+                  side: BorderSide(color: border, width: 1),
+                ),
+                shadows: const [
+                  BoxShadow(
+                    color: Color(0x0C000000),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Center(
+                  child: IntrinsicWidth(
+                    child: TextField(
+                      controller: widget.controller,
+                      focusNode: widget.focusNode,
+                      onSubmitted: (_) => widget.onSubmitted(),
+                      textInputAction: TextInputAction.done,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Manrope',
+                        fontWeight: FontWeight.w600,
+                        height: 1.43,
+                        color: Color(0xFF1D2126),
+                      ),
+                      decoration: InputDecoration(
+                        isCollapsed: true,
+                        isDense: true,
+                        hintText: widget.placeholder,
+                        hintStyle: const TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Manrope',
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

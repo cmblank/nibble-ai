@@ -7,6 +7,9 @@ import 'profile_screen.dart';
 import 'onboarding_screen.dart';
 import '../utils/profile_storage.dart';
 
+// Debug helper: set to true to always show onboarding welcome screen.
+const bool kForceOnboarding = true;
+
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
@@ -55,6 +58,10 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    if (kForceOnboarding) {
+      return CookingProfileOnboarding(onFinish: _onOnboardingFinished);
+    }
+
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFFAFBFC),
