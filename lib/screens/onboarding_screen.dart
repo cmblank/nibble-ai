@@ -6,6 +6,7 @@ import '../widgets/tertiary_button.dart';
 import '../widgets/select_card.dart';
 import '../widgets/stepper_header.dart';
 import '../widgets/multi_select_pills.dart';
+import '../widgets/days_per_week_slider_card.dart';
 
 class CookingProfileOnboarding extends StatefulWidget {
   final VoidCallback onFinish;
@@ -381,17 +382,15 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                   children: [
                       // Sliders section
                       _sectionTitle('On most weeks, how many nights do you end up cooking at home?'),
-                      _sliderCard(
-                        value: cookNightsCurrent.toDouble(),
-                        onChanged: (v) => setState(() => cookNightsCurrent = v.round()),
-                        label: '${cookNightsCurrent} nights/week',
+                      DaysPerWeekSliderCard(
+                        value: cookNightsCurrent,
+                        onChanged: (v) => setState(() => cookNightsCurrent = v),
                       ),
                       _sectionRule(),
                       _sectionTitle('Over time, how many nights would you love Nibble to help you cook'),
-                      _sliderCard(
-                        value: cookNightsGoal.toDouble(),
-                        onChanged: (v) => setState(() => cookNightsGoal = v.round()),
-                        label: '${cookNightsGoal} nights/week',
+                      DaysPerWeekSliderCard(
+                        value: cookNightsGoal,
+                        onChanged: (v) => setState(() => cookNightsGoal = v),
                       ),
                       _sectionRule(),
                       _sectionTitle('Who’s usually around your table?'),
@@ -1083,7 +1082,7 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
           style: const TextStyle(
             fontFamily: 'Manrope',
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: Color(0xFF1F2937),
           ),
         ),
@@ -1115,44 +1114,16 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
     );
   }
 
-  Widget _sliderCard({
-    required double value,
-    required ValueChanged<double> onChanged,
-    required String label,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Slider(
-          min: 0,
-          max: 7,
-          divisions: 7,
-          value: value.clamp(0.0, 7.0),
-          activeColor: AppColors.gardenHerb,
-          inactiveColor: AppColors.goldenCrust,
-          label: label,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text('0'),
-            Text('1'),
-            Text('2'),
-            Text('3'),
-            Text('4'),
-            Text('5'),
-            Text('6'),
-            Text('7'),
-          ],
-        ),
-        const SizedBox(height: 8),
-        const Divider(height: 1, color: Color(0xFFE5E7EB)),
-      ],
-    );
-  }
+  
+
+  // Figma-spec input meter for 0–7 days/week with animated fill and step markers
+  // Discrete steps, tap/drag to select nearest step, smooth width animation.
+  // Visuals:
+  // - Track: 6px height, rounded, bg #D9D9D9
+  // - Fill: AppColors.gardenHerb, animates to selected step center, min 9px at 0
+  // - Dots: 16x16 circles at each step; selected filled green, others outlined
+  // - Labels: 0..7 under dots, selected dark w600, others placeholder w400
+  // removed in favor of reusable widget DaysPerWeekMeter
 }
 
 // Welcome Step with Chef Mascot
