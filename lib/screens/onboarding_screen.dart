@@ -5,6 +5,7 @@ import '../widgets/primary_button.dart';
 import '../widgets/tertiary_button.dart';
 import '../widgets/select_card.dart';
 import '../widgets/stepper_header.dart';
+import '../widgets/multi_select_pills.dart';
 
 class CookingProfileOnboarding extends StatefulWidget {
   final VoidCallback onFinish;
@@ -303,8 +304,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Figma illustration (mascot + speech bubble)
-                    Align(
-                      alignment: Alignment.topLeft,
+                    Center(
                       child: Image.asset(
                         'assets/images/nib-welcome.png',
                         height: 140,
@@ -363,23 +363,22 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const StepperHeader(
-              step: 1,
-              totalSteps: 8,
-              title: 'Your Kitchen Life & Motivation',
-              subtitle: 'Helps nibble understand your cooking needs and goals',
-            ),
-            // Page content with padding
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const StepperHeader(
+                step: 1,
+                totalSteps: 8,
+                title: 'Your Kitchen Life & Motivation',
+                subtitle: 'Helps nibble understand your cooking needs and goals',
+              ),
+              // Page content with padding
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                       // Sliders section
                       _sectionTitle('On most weeks, how many nights do you end up cooking at home?'),
                       _sliderCard(
@@ -387,43 +386,58 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                         onChanged: (v) => setState(() => cookNightsCurrent = v.round()),
                         label: '${cookNightsCurrent} nights/week',
                       ),
-                      const SizedBox(height: 8),
+                      _sectionRule(),
                       _sectionTitle('Over time, how many nights would you love Nibble to help you cook'),
                       _sliderCard(
                         value: cookNightsGoal.toDouble(),
                         onChanged: (v) => setState(() => cookNightsGoal = v.round()),
                         label: '${cookNightsGoal} nights/week',
                       ),
-
-                      const SizedBox(height: 24),
+                      _sectionRule(),
                       _sectionTitle('Who’s usually around your table?'),
-                      const SizedBox(height: 8),
-                      ...householdOptions.map((opt) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: _selectionTile(
-                              title: opt,
-                              selected: household == opt,
-                              onTap: () => setState(() => household = opt),
-                            ),
-                          )),
-
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      ...householdOptions
+                          .asMap()
+                          .entries
+                          .map((entry) {
+                        final idx = entry.key;
+                        final opt = entry.value;
+                        final isLast = idx == householdOptions.length - 1;
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                          child: SelectCard(
+                            title: opt,
+                            description: '',
+                            showDescription: false,
+                            selected: household == opt,
+                            onTap: () => setState(() => household = opt),
+                          ),
+                        );
+                      }),
+                      _sectionRule(),
                       _sectionTitle('Your first cooking goal'),
-                      const SizedBox(height: 8),
-                      ...firstCookingGoals.map((g) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: _goalCard(
-                              title: g['title']!,
-                              desc: g['desc']!,
-                              selected: firstGoal == g['title'],
-                              onTap: () => setState(() => firstGoal = g['title']!),
-                            ),
-                          )),
-
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      ...firstCookingGoals
+                          .asMap()
+                          .entries
+                          .map((entry) {
+                        final idx = entry.key;
+                        final g = entry.value;
+                        final isLast = idx == firstCookingGoals.length - 1;
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                          child: SelectCard(
+                            title: g['title']!,
+                            description: g['desc']!,
+                            selected: firstGoal == g['title'],
+                            onTap: () => setState(() => firstGoal = g['title']!),
+                          ),
+                        );
+                      }),
+                      _sectionRule(),
                       _sectionTitle('What kinds of meals should I focus on for you?'),
-                      const SizedBox(height: 8),
-                      _buildMultiSelectPills(
+                      const SizedBox(height: 16),
+                      MultiSelectPills(
                         options: mealFocusOptions,
                         selectedOptions: mealFocus,
                         onSelectionChanged: (val) {
@@ -436,11 +450,10 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           });
                         },
                       ),
-
-                      const SizedBox(height: 24),
+                      _sectionRule(),
                       _sectionTitle('What’s driving you to cook more?'),
-                      const SizedBox(height: 8),
-                      _buildMultiSelectPills(
+                      const SizedBox(height: 16),
+                      MultiSelectPills(
                         options: motivationOptions,
                         selectedOptions: cookMotivations,
                         onSelectionChanged: (val) {
@@ -453,11 +466,10 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           });
                         },
                       ),
-
-                      const SizedBox(height: 24),
+                      _sectionRule(),
                       _sectionTitle('What sometimes gets in the way of cooking?'),
-                      const SizedBox(height: 8),
-                      _buildMultiSelectPills(
+                      const SizedBox(height: 16),
+                      MultiSelectPills(
                         options: blockerOptions,
                         selectedOptions: cookBlockers,
                         onSelectionChanged: (val) {
@@ -470,8 +482,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           });
                         },
                       ),
-
-                      const SizedBox(height: 24),
+                      _sectionRule(),
                       // Navigation
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -492,9 +503,8 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -558,7 +568,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF059669),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
@@ -657,7 +667,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
           subtitle: 'Select all that apply so I can tailor your recipe suggestions perfectly.',
         ),
         const SizedBox(height: 32),
-        _buildMultiSelectPills(
+        MultiSelectPills(
           options: dietaryPreferences,
           selectedOptions: selectedDiets,
           onSelectionChanged: (diet) {
@@ -685,7 +695,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
           subtitle: "I'll make sure to keep these completely out of your recommendations for safe cooking.",
         ),
         const SizedBox(height: 32),
-        _buildMultiSelectPills(
+        MultiSelectPills(
           options: commonAllergies,
           selectedOptions: selectedAllergies,
           onSelectionChanged: (allergy) {
@@ -713,7 +723,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
           subtitle: "Choose your favorites so I can fill your feed with flavors you'll love exploring.",
         ),
         const SizedBox(height: 32),
-        _buildMultiSelectPills(
+        MultiSelectPills(
           options: cuisineTypes,
           selectedOptions: selectedCuisines,
           onSelectionChanged: (cuisine) {
@@ -1072,8 +1082,8 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
           title,
           style: const TextStyle(
             fontFamily: 'Manrope',
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF1F2937),
           ),
         ),
@@ -1093,6 +1103,18 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
     );
   }
 
+  // 1px horizontal rule between sections with #D7DBE0 and balanced spacing
+  Widget _sectionRule() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 40),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: Color(0xFFD7DBE0),
+      ),
+    );
+  }
+
   Widget _sliderCard({
     required double value,
     required ValueChanged<double> onChanged,
@@ -1101,7 +1123,7 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         Slider(
           min: 0,
           max: 7,

@@ -18,7 +18,7 @@ class PrimaryButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.leading,
-  this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   this.borderRadius = 8,
   this.color = const Color(0xFFE43707),
     this.textColor = Colors.white,

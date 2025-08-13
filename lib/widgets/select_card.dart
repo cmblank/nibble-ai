@@ -9,6 +9,8 @@ class SelectCard extends StatefulWidget {
   final VoidCallback? onTap;
   final double width;
   final EdgeInsets padding;
+  // Spec: Show Option Description (Boolean), default true
+  final bool showDescription;
 
   const SelectCard({
     super.key,
@@ -17,7 +19,8 @@ class SelectCard extends StatefulWidget {
     this.selected = false,
     this.onTap,
     this.width = double.infinity,
-    this.padding = const EdgeInsets.all(12),
+  this.padding = const EdgeInsets.all(12),
+  this.showDescription = true,
   });
 
   @override
@@ -31,11 +34,13 @@ class _SelectCardState extends State<SelectCard> {
   Widget build(BuildContext context) {
     final selected = widget.selected;
 
+  // Background:
+  // - Rest: white
+  // - Hover: white (border highlights)
+  // - Selected: sage-100 (#F7FDFB)
   final bg = selected
-    ? const Color(0xFFF7FDFB) // selected bg
-    : (_hovered
-      ? const Color(0xFFF7FDFB) // hover mirrors selected per desktop spec
-      : Colors.white);
+      ? const Color(0xFFF7FDFB)
+      : Colors.white;
     final borderColor = selected || _hovered
         ? const Color(0xFF319B7B) // sage-1000
         : const Color(0xFFE8EAED); // subtle border
@@ -60,7 +65,7 @@ class _SelectCardState extends State<SelectCard> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _RadioDot(selected: selected),
+              _RadioDot(selected: selected, hovered: _hovered),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -76,17 +81,19 @@ class _SelectCardState extends State<SelectCard> {
                         height: 1.43,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.description,
-                      style: const TextStyle(
-                        color: Color(0xFF353C45),
-                        fontSize: 12,
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w600,
-                        height: 1.33,
+                    if (widget.showDescription && widget.description.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.description,
+                        style: const TextStyle(
+                          color: Color(0xFF353C45),
+                          fontSize: 12,
+                          fontFamily: 'Manrope',
+                          fontWeight: FontWeight.w600,
+                          height: 1.33,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -100,21 +107,31 @@ class _SelectCardState extends State<SelectCard> {
 
 class _RadioDot extends StatelessWidget {
   final bool selected;
-  const _RadioDot({required this.selected});
+  final bool hovered;
+  const _RadioDot({required this.selected, required this.hovered});
 
   @override
   Widget build(BuildContext context) {
-    final border = selected ? const Color(0xFF319B7B) : const Color(0xFFE8EAED);
+    final border = (selected || hovered) ? const Color(0xFF319B7B) : const Color(0xFFE8EAED);
     return Container(
       width: 20,
       height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: border, width: 2),
-        color: selected ? const Color(0xFF319B7B) : Colors.transparent,
+        color: Colors.transparent,
       ),
       child: selected
-          ? const Icon(Icons.check, size: 12, color: Colors.white)
+          ? Center(
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF319B7B),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            )
           : null,
     );
   }

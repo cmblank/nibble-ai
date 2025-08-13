@@ -59,7 +59,7 @@ class StepperHeader extends StatelessWidget {
               subtitle!,
               style: const TextStyle(
                 color: Color(0xFFF7FDFB),
-                fontSize: 12,
+                fontSize: 14,
                 fontFamily: 'Manrope',
                 fontWeight: FontWeight.w500,
                 height: 1.33,
