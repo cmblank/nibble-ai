@@ -83,7 +83,16 @@ class PrimaryButton extends StatelessWidget {
     );
 
     if (!fullWidth) return button;
-    return SizedBox(width: double.infinity, child: button);
+    // If width is unbounded (e.g., inside a Row), avoid forcing infinity
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.hasBoundedWidth) {
+          return SizedBox(width: double.infinity, child: button);
+        }
+        // Fallback: behave like non-fullWidth to prevent layout exceptions
+        return button;
+      },
+    );
   }
 }
  

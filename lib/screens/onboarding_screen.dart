@@ -519,6 +519,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           onPressed: _nextStep,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           fontSize: 16,
+                          fullWidth: false,
                         ),
                       ],
                     )
@@ -609,6 +610,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           onPressed: _nextStep,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           fontSize: 16,
+                          fullWidth: false,
                         ),
                       ],
                     )
@@ -659,6 +661,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           onPressed: _nextStep,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           fontSize: 16,
+                          fullWidth: false,
                         ),
                       ],
                     )
@@ -711,6 +714,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                           onPressed: _saveAndFinish,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           fontSize: 16,
+                          fullWidth: false,
                         ),
                       ],
                     )
