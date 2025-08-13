@@ -34,7 +34,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   String selectedCookingTime = '';
   String selectedBudget = '';
 
-  // Step 1: Kitchen Life & Motivation (from Figma)
+  // Step 1: Kitchen Life
   int cookNightsCurrent = 0; // 0-7
   int cookNightsGoal = 0; // 0-7
   String household = '';
@@ -43,13 +43,11 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   List<String> cookMotivations = [];
   List<String> cookBlockers = [];
 
-  // Hover tracking (desktop): use same styling as selected when hovered
-  String? _hoveredHousehold;
-  String? _hoveredGoal;
-  final Set<String> _hoveredChipOptions = {};
+  // Hover tracking (desktop)
+  // (hover state managed within widgets as needed)
 
   final List<String> experienceLevels = [
-    'Beginner - I\'m just starting my cooking journey!',
+    "Beginner - I'm just starting my cooking journey!",
     'Intermediate - I can follow recipes confidently',
     'Advanced - I love experimenting in the kitchen',
     'Expert - I could teach others to cook'
@@ -116,7 +114,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   final List<Map<String, String>> firstCookingGoals = const [
     {
       'title': 'Cut back on takeout',
-      'desc': 'Swap delivery nights for quick, satisfying dinners you\'ll actually look forward to.',
+      'desc': "Swap delivery nights for quick, satisfying dinners you'll actually look forward to.",
     },
     {
       'title': 'Add more vegetables',
@@ -124,11 +122,11 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     },
     {
       'title': 'Use what I have',
-      'desc': 'Turn what\'s in your kitchen into dinners you\'ll be proud of.',
+      'desc': "Turn what's in your kitchen into dinners you'll be proud of.",
     },
     {
       'title': 'Make cooking feel easier',
-      'desc': 'Simple recipes now, skills you\'ll grow over time.',
+      'desc': "Simple recipes now, skills you'll grow over time.",
     },
   ];
 
@@ -160,7 +158,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   final List<String> blockerOptions = const [
     'No time',
     'low energy',
-    'Don\'t know what to make',
+    "Don't know what to make",
     'Hate grocery shopping',
     'Lack of confidence',
     'Other',
@@ -186,97 +184,27 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   }
 
   void _nextStep() {
-    if (currentStep < 7) {
-      setState(() {
-        currentStep++;
-      });
-    }
+    setState(() {
+      currentStep = (currentStep + 1).clamp(0, 6);
+    });
   }
 
   void _previousStep() {
-    if (currentStep > 0) {
-      setState(() {
-        currentStep--;
-      });
-    }
+    setState(() {
+      currentStep = (currentStep - 1).clamp(0, 6);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (currentStep == 0) {
-      return _buildWelcomeScreen();
-    } else if (currentStep == 1) {
-      return _buildNameScreen();
-    } else if (currentStep == 8) {
-      return _buildCompletionScreen();
-    }
-    
-    return Scaffold(
-      backgroundColor: AppColors.creamWhisk,
-      appBar: AppBar(
-  backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.deepRoast),
-          onPressed: _previousStep,
-        ),
-        actions: [
-          TextButton(
-            onPressed: _saveAndFinish,
-            child: const Text(
-              'Skip',
-              style: TextStyle(color: AppColors.gardenHerb),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            // Progress indicator
-            LinearProgressIndicator(
-              value: currentStep / 8,
-              minHeight: 6,
-              backgroundColor: AppColors.goldenCrust,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.gardenHerb),
-            ),
-            const SizedBox(height: 32),
-            
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: _buildCurrentStepContent(),
-              ),
-            ),
-            
-            // Navigation buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TertiaryButton(
-                  label: 'Back',
-                  onPressed: currentStep > 1 ? _previousStep : null,
-                  filled: true,
-                ),
-        ElevatedButton(
-                  onPressed: _canProceed() ? (currentStep == 7 ? _saveAndFinish : _nextStep) : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.gardenHerb,
-                    foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(currentStep == 7 ? 'Complete Setup' : 'Continue'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+    if (currentStep == 0) return _buildWelcomeScreen();
+    if (currentStep == 1) return _buildKitchenLifeStep();
+    if (currentStep == 2) return _buildToolsSkillsStep();
+    if (currentStep == 3) return _buildFoodPreferencesStep();
+    if (currentStep == 4) return _buildPantrySnapshotStep();
+    if (currentStep == 5) return _buildStayingInSyncStep();
+    if (currentStep == 6) return _buildCompletionScreen();
+    return const SizedBox.shrink();
   }
 
   Widget _buildWelcomeScreen() {
@@ -304,7 +232,6 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Figma illustration (mascot + speech bubble)
                     Center(
                       child: Image.asset(
                         'assets/images/nib-welcome.png',
@@ -318,7 +245,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 24,
-                        fontWeight: FontWeight.w700, // Bold per request
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
                       ),
                       textAlign: TextAlign.center,
@@ -359,8 +286,8 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     );
   }
 
-  Widget _buildNameScreen() {
-    // Step 1: Kitchen Life & Motivation
+  // Step 1: Kitchen life
+  Widget _buildKitchenLifeStep() {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -370,138 +297,396 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
             children: [
               const StepperHeader(
                 step: 1,
-                totalSteps: 8,
-                title: 'Your Kitchen Life & Motivation',
-                subtitle: 'Helps nibble understand your cooking needs and goals',
+                totalSteps: 5,
+                title: 'Kitchen Life',
+                subtitle: 'Helps Nibble understand your cooking needs and goals',
               ),
-              // Page content with padding
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                      // Sliders section
-                      _sectionTitle('On most weeks, how many nights do you end up cooking at home?'),
-                      DaysPerWeekSliderCard(
-                        value: cookNightsCurrent,
-                        onChanged: (v) => setState(() => cookNightsCurrent = v),
-                      ),
-                      _sectionRule(),
-                      _sectionTitle('Over time, how many nights would you love Nibble to help you cook'),
-                      DaysPerWeekSliderCard(
-                        value: cookNightsGoal,
-                        onChanged: (v) => setState(() => cookNightsGoal = v),
-                      ),
-                      _sectionRule(),
-                      _sectionTitle('Who’s usually around your table?'),
-                      const SizedBox(height: 16),
-                      ...householdOptions
-                          .asMap()
-                          .entries
-                          .map((entry) {
-                        final idx = entry.key;
-                        final opt = entry.value;
-                        final isLast = idx == householdOptions.length - 1;
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
-                          child: SelectCard(
-                            title: opt,
-                            description: '',
-                            showDescription: false,
-                            selected: household == opt,
-                            onTap: () => setState(() => household = opt),
-                          ),
-                        );
-                      }),
-                      _sectionRule(),
-                      _sectionTitle('Your first cooking goal'),
-                      const SizedBox(height: 16),
-                      ...firstCookingGoals
-                          .asMap()
-                          .entries
-                          .map((entry) {
-                        final idx = entry.key;
-                        final g = entry.value;
-                        final isLast = idx == firstCookingGoals.length - 1;
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
-                          child: SelectCard(
-                            title: g['title']!,
-                            description: g['desc']!,
-                            selected: firstGoal == g['title'],
-                            onTap: () => setState(() => firstGoal = g['title']!),
-                          ),
-                        );
-                      }),
-                      _sectionRule(),
-                      _sectionTitle('What kinds of meals should I focus on for you?'),
-                      const SizedBox(height: 16),
-                      MultiSelectPills(
-                        options: mealFocusOptions,
-                        selectedOptions: mealFocus,
-                        onSelectionChanged: (val) {
-                          setState(() {
-                            if (mealFocus.contains(val)) {
-                              mealFocus.remove(val);
-                            } else {
-                              mealFocus.add(val);
-                            }
-                          });
-                        },
-                      ),
-                      _sectionRule(),
-                      _sectionTitle('What’s driving you to cook more?'),
-                      const SizedBox(height: 16),
-                      MultiSelectPills(
-                        options: motivationOptions,
-                        selectedOptions: cookMotivations,
-                        onSelectionChanged: (val) {
-                          setState(() {
-                            if (cookMotivations.contains(val)) {
-                              cookMotivations.remove(val);
-                            } else {
-                              cookMotivations.add(val);
-                            }
-                          });
-                        },
-                      ),
-                      _sectionRule(),
-                      _sectionTitle('What sometimes gets in the way of cooking?'),
-                      const SizedBox(height: 16),
-                      MultiSelectPills(
-                        options: blockerOptions,
-                        selectedOptions: cookBlockers,
-                        onSelectionChanged: (val) {
-                          setState(() {
-                            if (cookBlockers.contains(val)) {
-                              cookBlockers.remove(val);
-                            } else {
-                              cookBlockers.add(val);
-                            }
-                          });
-                        },
-                      ),
-                      _sectionRule(),
-                      // Navigation
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TertiaryButton(
-                            label: 'Back',
-                            onPressed: _previousStep,
-                          ),
-                          PrimaryButton(
-                            label: 'Continue',
-                            onPressed: _nextStep,
-                            fullWidth: false,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            fontSize: 16,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    _sectionTitle('On most weeks, how many nights do you end up cooking at home?'),
+                    DaysPerWeekSliderCard(
+                      value: cookNightsCurrent,
+                      onChanged: (v) => setState(() => cookNightsCurrent = v),
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('Over time, how many nights would you love Nibble to help you cook'),
+                    DaysPerWeekSliderCard(
+                      value: cookNightsGoal,
+                      onChanged: (v) => setState(() => cookNightsGoal = v),
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('Who’s usually around your table?'),
+                    const SizedBox(height: 16),
+                    ...householdOptions
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      final idx = entry.key;
+                      final opt = entry.value;
+                      final isLast = idx == householdOptions.length - 1;
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                        child: SelectCard(
+                          title: opt,
+                          description: '',
+                          showDescription: false,
+                          selected: household == opt,
+                          onTap: () => setState(() => household = opt),
+                        ),
+                      );
+                    }),
+                    _sectionRule(),
+                    _sectionTitle('Your first cooking goal'),
+                    const SizedBox(height: 16),
+                    ...firstCookingGoals
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      final idx = entry.key;
+                      final g = entry.value;
+                      final isLast = idx == firstCookingGoals.length - 1;
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                        child: SelectCard(
+                          title: g['title']!,
+                          description: g['desc']!,
+                          selected: firstGoal == g['title'],
+                          onTap: () => setState(() => firstGoal = g['title']!),
+                        ),
+                      );
+                    }),
+                    _sectionRule(),
+                    _sectionTitle('What kinds of meals should I focus on for you?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: mealFocusOptions,
+                      selectedOptions: mealFocus,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (mealFocus.contains(val)) {
+                            mealFocus.remove(val);
+                          } else {
+                            mealFocus.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('What’s driving you to cook more?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: motivationOptions,
+                      selectedOptions: cookMotivations,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (cookMotivations.contains(val)) {
+                            cookMotivations.remove(val);
+                          } else {
+                            cookMotivations.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('What sometimes gets in the way of cooking?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: blockerOptions,
+                      selectedOptions: cookBlockers,
+                      onSelectionChanged: (val) {
+                        setState(() {
+                          if (cookBlockers.contains(val)) {
+                            cookBlockers.remove(val);
+                          } else {
+                            cookBlockers.add(val);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TertiaryButton(
+                          label: 'Back',
+                          onPressed: _previousStep,
+                        ),
+                        PrimaryButton(
+                          label: 'Continue',
+                          onPressed: _nextStep,
+                          fullWidth: false,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          fontSize: 16,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Step 2: Tools & Skills
+  Widget _buildToolsSkillsStep() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const StepperHeader(
+                step: 2,
+                totalSteps: 5,
+                title: 'Tools & Skills',
+                subtitle: "We'll tailor suggestions to your setup and comfort",
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle("What's your cooking experience level?"),
+                    const SizedBox(height: 16),
+                    ...experienceLevels.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final level = entry.value;
+                      final isLast = idx == experienceLevels.length - 1;
+                      final parts = level.split(' - ');
+                      final title = parts.isNotEmpty ? parts.first : level;
+                      final description = parts.length > 1 ? parts.sublist(1).join(' - ') : '';
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 0 : 12.0),
+                        child: SelectCard(
+                          title: title,
+                          description: description,
+                          selected: selectedExperience == level,
+                          onTap: () => setState(() => selectedExperience = level),
+                        ),
+                      );
+                    }),
+                    _sectionRule(),
+                    _sectionTitle('Any tools you want to lean on?'),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'E.g., slow cooker, air fryer, grill... (optional)',
+                      style: TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TertiaryButton(label: 'Back', onPressed: _previousStep),
+                        PrimaryButton(
+                          label: 'Continue',
+                          onPressed: _nextStep,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          fontSize: 16,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Step 3: Food Preferences
+  Widget _buildFoodPreferencesStep() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const StepperHeader(
+                step: 3,
+                totalSteps: 5,
+                title: 'Food Preferences',
+                subtitle: 'Set the guardrails for great recommendations',
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle('Any dietary preferences?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: dietaryPreferences,
+                      selectedOptions: selectedDiets,
+                      onSelectionChanged: (diet) {
+                        setState(() {
+                          if (selectedDiets.contains(diet)) {
+                            selectedDiets.remove(diet);
+                          } else {
+                            selectedDiets.add(diet);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('Any food allergies or restrictions?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: commonAllergies,
+                      selectedOptions: selectedAllergies,
+                      onSelectionChanged: (allergy) {
+                        setState(() {
+                          if (selectedAllergies.contains(allergy)) {
+                            selectedAllergies.remove(allergy);
+                          } else {
+                            selectedAllergies.add(allergy);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    _sectionTitle('What cuisines make you excited to cook?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: cuisineTypes,
+                      selectedOptions: selectedCuisines,
+                      onSelectionChanged: (cuisine) {
+                        setState(() {
+                          if (selectedCuisines.contains(cuisine)) {
+                            selectedCuisines.remove(cuisine);
+                          } else {
+                            selectedCuisines.add(cuisine);
+                          }
+                        });
+                      },
+                    ),
+                    _sectionRule(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TertiaryButton(label: 'Back', onPressed: _previousStep),
+                        PrimaryButton(
+                          label: 'Continue',
+                          onPressed: _nextStep,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          fontSize: 16,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Step 4: Pantry Snapshot (temporary content reused from time preferences)
+  Widget _buildPantrySnapshotStep() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const StepperHeader(
+                step: 4,
+                totalSteps: 5,
+                title: 'Pantry Snapshot',
+                subtitle: 'A quick sense of your routine helps planning',
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle('How much time do you usually have for cooking?'),
+                    const SizedBox(height: 16),
+                    ...cookingTimes.map((time) => _buildOptionTile(
+                          time,
+                          selectedCookingTime == time,
+                          () => setState(() => selectedCookingTime = time),
+                        )),
+                    _sectionRule(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TertiaryButton(label: 'Back', onPressed: _previousStep),
+                        PrimaryButton(
+                          label: 'Continue',
+                          onPressed: _nextStep,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          fontSize: 16,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Step 5: Staying in Sync (placeholder content)
+  Widget _buildStayingInSyncStep() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const StepperHeader(
+                step: 5,
+                totalSteps: 5,
+                title: 'Staying in Sync',
+                subtitle: "We'll help keep plans and preferences up to date",
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "We'll add calendar integrations and reminders here soon. For now, you can finish setup and start cooking!",
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TertiaryButton(label: 'Back', onPressed: _previousStep),
+                        PrimaryButton(
+                          label: 'Complete Setup',
+                          onPressed: _saveAndFinish,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          fontSize: 16,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -542,7 +727,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'I\'ve got everything I need to be your perfect cooking companion. Let\'s take the pressure off and focus on what feels achievable and delicious.',
+                "I've got everything I need to be your perfect cooking companion. Let's take the pressure off and focus on what feels achievable and delicious.",
                 style: TextStyle(
                   fontSize: 18, 
                   height: 1.5, 
@@ -584,358 +769,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     );
   }
 
-  Widget _buildCurrentStepContent() {
-    switch (currentStep) {
-      case 2:
-        return _buildExperienceStep();
-      case 3:
-        return _buildDietStep();
-      case 4:
-        return _buildAllergiesStep();
-      case 5:
-        return _buildCuisinesStep();
-      case 6:
-        return _buildTimeStep();
-      case 7:
-        return _buildBudgetStep();
-      default:
-        return Container();
-    }
-  }
-
-  bool _canProceed() {
-    switch (currentStep) {
-      case 1:
-  // Don\'t block on this multi-section screen; all fields are optional
-  return true;
-      case 2:
-        return selectedExperience.isNotEmpty;
-      case 3:
-        return selectedDiets.isNotEmpty;
-      case 4:
-        return selectedAllergies.isNotEmpty;
-      case 5:
-        return selectedCuisines.isNotEmpty;
-      case 6:
-        return selectedCookingTime.isNotEmpty;
-      case 7:
-        return selectedBudget.isNotEmpty;
-      default:
-        return true;
-    }
-  }
-
-  Widget _buildExperienceStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepperHeader(
-          step: 2,
-          totalSteps: 8,
-          title: "What's your cooking experience level?",
-          subtitle: 'This helps me suggest recipes that match your skill level and comfort zone.',
-        ),
-        const SizedBox(height: 24),
-        ...experienceLevels.map((level) {
-          final parts = level.split(' - ');
-          final title = parts.isNotEmpty ? parts.first : level;
-          final description = parts.length > 1 ? parts.sublist(1).join(' - ') : '';
-          final isSelected = selectedExperience == level;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: SelectCard(
-              title: title,
-              description: description,
-              selected: isSelected,
-              onTap: () => setState(() => selectedExperience = level),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildDietStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepperHeader(
-          step: 3,
-          totalSteps: 8,
-          title: 'Any dietary preferences?',
-          subtitle: 'Select all that apply so I can tailor your recipe suggestions perfectly.',
-        ),
-        const SizedBox(height: 32),
-        MultiSelectPills(
-          options: dietaryPreferences,
-          selectedOptions: selectedDiets,
-          onSelectionChanged: (diet) {
-            setState(() {
-              if (selectedDiets.contains(diet)) {
-                selectedDiets.remove(diet);
-              } else {
-                selectedDiets.add(diet);
-              }
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAllergiesStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepperHeader(
-          step: 4,
-          totalSteps: 8,
-          title: 'Any food allergies or restrictions?',
-          subtitle: "I'll make sure to keep these completely out of your recommendations for safe cooking.",
-        ),
-        const SizedBox(height: 32),
-        MultiSelectPills(
-          options: commonAllergies,
-          selectedOptions: selectedAllergies,
-          onSelectionChanged: (allergy) {
-            setState(() {
-              if (selectedAllergies.contains(allergy)) {
-                selectedAllergies.remove(allergy);
-              } else {
-                selectedAllergies.add(allergy);
-              }
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCuisinesStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepperHeader(
-          step: 5,
-          totalSteps: 8,
-          title: 'What cuisines make you excited to cook?',
-          subtitle: "Choose your favorites so I can fill your feed with flavors you'll love exploring.",
-        ),
-        const SizedBox(height: 32),
-        MultiSelectPills(
-          options: cuisineTypes,
-          selectedOptions: selectedCuisines,
-          onSelectionChanged: (cuisine) {
-            setState(() {
-              if (selectedCuisines.contains(cuisine)) {
-                selectedCuisines.remove(cuisine);
-              } else {
-                selectedCuisines.add(cuisine);
-              }
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimeStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepperHeader(
-          step: 6,
-          totalSteps: 8,
-          title: 'How much time do you usually have for cooking?',
-          subtitle: "I'll prioritize recipes that fit comfortably into your schedule without stress.",
-        ),
-        const SizedBox(height: 32),
-        ...cookingTimes.map((time) => _buildOptionTile(
-              time,
-              selectedCookingTime == time,
-              () => setState(() => selectedCookingTime = time),
-            )),
-      ],
-    );
-  }
-
-  Widget _buildBudgetStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepperHeader(
-          step: 7,
-          totalSteps: 8,
-          title: "What's your typical grocery budget?",
-          subtitle: 'This helps me suggest recipes with ingredients that work for your budget and lifestyle.',
-        ),
-        const SizedBox(height: 32),
-        ...budgetRanges.map((budget) => _buildOptionTile(
-              budget,
-              selectedBudget == budget,
-              () => setState(() => selectedBudget = budget),
-            )),
-      ],
-    );
-  }
-
-  // Selection tile with hover (hover uses selected styling)
-  Widget _selectionTile({
-    required String title,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    final highlighted = selected || _hoveredHousehold == title;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hoveredHousehold = title),
-      onExit: (_) => setState(() {
-        if (_hoveredHousehold == title) _hoveredHousehold = null;
-      }),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: highlighted ? AppColors.gardenHerb : const Color(0xFFE5E7EB),
-              width: highlighted ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              // Radio-style indicator
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: highlighted ? AppColors.gardenHerb : const Color(0xFF9CA3AF),
-                    width: 2,
-                  ),
-                ),
-                child: highlighted
-                    ? Center(
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(
-                            color: AppColors.gardenHerb,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 15,
-                    fontWeight: highlighted ? FontWeight.w600 : FontWeight.w500,
-                    color: highlighted ? AppColors.gardenHerb : const Color(0xFF374151),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Goal card with hover (hover uses selected styling)
-  Widget _goalCard({
-    required String title,
-    required String desc,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    final highlighted = selected || _hoveredGoal == title;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hoveredGoal = title),
-      onExit: (_) => setState(() {
-        if (_hoveredGoal == title) _hoveredGoal = null;
-      }),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: highlighted ? AppColors.gardenHerb : const Color(0xFFE5E7EB),
-              width: highlighted ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Radio-style indicator
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: highlighted ? AppColors.gardenHerb : const Color(0xFF9CA3AF),
-                    width: 2,
-                  ),
-                ),
-                child: highlighted
-                    ? Center(
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.gardenHerb,
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      desc,
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 14,
-                        height: 1.4,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  // Helpers
   Widget _buildOptionTile(String title, bool isSelected, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -1003,76 +837,8 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     );
   }
 
-  Widget _buildMultiSelectPills({
-    required List<String> options,
-    required List<String> selectedOptions,
-    required Function(String) onSelectionChanged,
-  }) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: options.map((option) {
-        final isSelected = selectedOptions.contains(option);
-        final isHovered = _hoveredChipOptions.contains(option);
-        final highlighted = isSelected || isHovered;
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredChipOptions.add(option)),
-          onExit: (_) => setState(() => _hoveredChipOptions.remove(option)),
-          child: GestureDetector(
-            onTap: () => onSelectionChanged(option),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(
-                  color: highlighted ? AppColors.gardenHerb : const Color(0xFFE5E7EB),
-                  width: highlighted ? 2 : 1,
-                ),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Text(
-                option,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 14,
-                  fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
-                  color: highlighted ? AppColors.gardenHerb : const Color(0xFF374151),
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+  
 
-  Future<void> _saveAndFinish() async {
-    final profileData = {
-      'name': userName,
-      'experience': selectedExperience,
-      'diets': selectedDiets,
-      'allergies': selectedAllergies,
-      'cuisines': selectedCuisines,
-      'cookingTime': selectedCookingTime,
-      'budget': selectedBudget,
-      // Step 1 fields
-      'cookNightsCurrent': cookNightsCurrent,
-      'cookNightsGoal': cookNightsGoal,
-      'household': household,
-      'firstGoal': firstGoal,
-      'mealFocus': mealFocus,
-      'cookMotivations': cookMotivations,
-      'cookBlockers': cookBlockers,
-      'completedAt': DateTime.now().toIso8601String(),
-    };
-
-    await ProfileStorage.saveProfile(profileData);
-    widget.onFinish();
-  }
-}
-
-extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
   Widget _sectionTitle(String title, [String? subtitle]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1102,7 +868,6 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
     );
   }
 
-  // 1px horizontal rule between sections with #D7DBE0 and balanced spacing
   Widget _sectionRule() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 40),
@@ -1114,309 +879,27 @@ extension _OnboardingUiHelpers on _CookingProfileOnboardingState {
     );
   }
 
-  
+  Future<void> _saveAndFinish() async {
+    final profileData = {
+      'name': userName,
+      'experience': selectedExperience,
+      'diets': selectedDiets,
+      'allergies': selectedAllergies,
+      'cuisines': selectedCuisines,
+      'cookingTime': selectedCookingTime,
+      'budget': selectedBudget,
+      // Step 1 fields
+      'cookNightsCurrent': cookNightsCurrent,
+      'cookNightsGoal': cookNightsGoal,
+      'household': household,
+      'firstGoal': firstGoal,
+      'mealFocus': mealFocus,
+      'cookMotivations': cookMotivations,
+      'cookBlockers': cookBlockers,
+      'completedAt': DateTime.now().toIso8601String(),
+    };
 
-  // Figma-spec input meter for 0–7 days/week with animated fill and step markers
-  // Discrete steps, tap/drag to select nearest step, smooth width animation.
-  // Visuals:
-  // - Track: 6px height, rounded, bg #D9D9D9
-  // - Fill: AppColors.gardenHerb, animates to selected step center, min 9px at 0
-  // - Dots: 16x16 circles at each step; selected filled green, others outlined
-  // - Labels: 0..7 under dots, selected dark w600, others placeholder w400
-  // removed in favor of reusable widget DaysPerWeekMeter
-}
-
-// Welcome Step with Chef Mascot
-class _WelcomeStep extends StatelessWidget {
-  final VoidCallback onNext;
-  const _WelcomeStep({required this.onNext});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          // Chef Squire Mascot
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: const Color(0xFF059669),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Stack(
-              alignment: Alignment.center,
-              children: [
-                // Chef hat
-                Positioned(
-                  top: 15,
-                  child: Text('👨‍🍳', style: TextStyle(fontSize: 40)),
-                ),
-                // Leaf accent
-                Positioned(
-                  bottom: 15,
-                  right: 15,
-                  child: Text('🍃', style: TextStyle(fontSize: 20)),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-          const Text(
-            '👋 Welcome to Nibble!',
-            style: TextStyle(
-              fontSize: 32, 
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Your cozy cooking companion is here! I\'m Chef Squire, and I\'m excited to help you cook with more joy and less stress.',
-            style: TextStyle(
-              fontSize: 18,
-              height: 1.4,
-              color: Color(0xFF6B7280),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Let\'s set up your cooking profile so I can be genuinely helpful and make your kitchen adventures feel effortless!',
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onNext,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF059669),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Start My Cooking Journey',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    await ProfileStorage.saveProfile(profileData);
+    widget.onFinish();
   }
 }
-
-// Basic Info Step (simplified for now)
-class _BasicInfoStep extends StatelessWidget {
-  final VoidCallback onNext;
-  final VoidCallback onBack;
-  final Map<String, dynamic> formData;
-  final int step;
-  const _BasicInfoStep({required this.onNext, required this.onBack, required this.formData, required this.step});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          StepperHeader(step: step, totalSteps: 8, title: 'Let\'s get acquainted'),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('👨‍�', style: TextStyle(fontSize: 24)),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'First things first — what should I call you, Chef?',
-                    style: TextStyle(
-                      fontSize: 16, 
-                      height: 1.5, 
-                      color: Color(0xFF374151),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'What should I call you?',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            initialValue: formData['name'] ?? '',
-            style: const TextStyle(fontSize: 16),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF059669), width: 2),
-              ),
-              hintText: 'Chef [Your Name]',
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-            onChanged: (val) => formData['name'] = val,
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TertiaryButton(
-                label: 'Back',
-                onPressed: onBack,
-              ),
-        ElevatedButton(
-                onPressed: onNext,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF059669),
-                  foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: const Text('Continue Cooking Journey', style: TextStyle(fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Finish Step
-class _FinishStep extends StatelessWidget {
-  final VoidCallback onFinish;
-  final VoidCallback onBack;
-  final Map<String, dynamic> formData;
-  const _FinishStep({required this.onFinish, required this.onBack, required this.formData});
-
-  @override
-  Widget build(BuildContext context) {
-    String userName = formData['name'] ?? 'there';
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: const Color(0xFF059669),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Center(
-              child: Text('✨', style: TextStyle(fontSize: 40)),
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'Wonderful, Chef $userName!',
-            style: const TextStyle(
-              fontSize: 28, 
-              fontWeight: FontWeight.w700, 
-              color: Color(0xFF1F2937),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'I\'ve got everything I need to be your perfect cooking companion. Let\'s take the pressure off and focus on what feels achievable and delicious.',
-            style: TextStyle(
-              fontSize: 18, 
-              height: 1.5, 
-              color: Color(0xFF6B7280),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Ready to create something amazing in your kitchen?',
-            style: TextStyle(
-              fontSize: 16, 
-              color: Color(0xFF6B7280),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                await ProfileStorage.saveProfile(formData);
-                onFinish();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF059669),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Start Cooking with Nibble!',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TertiaryButton(
-            label: 'Back',
-            onPressed: onBack,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Stepper Header moved to lib/widgets/stepper_header.dart (Figma-spec)
