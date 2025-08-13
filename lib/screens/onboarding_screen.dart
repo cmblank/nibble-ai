@@ -33,6 +33,8 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   List<String> selectedCuisines = [];
   String selectedCookingTime = '';
   String selectedBudget = '';
+  // Step 2: Tools & Skills
+  List<String> selectedTools = [];
 
   // Step 1: Kitchen Life
   int cookNightsCurrent = 0; // 0-7
@@ -46,11 +48,22 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   // Hover tracking (desktop)
   // (hover state managed within widgets as needed)
 
-  final List<String> experienceLevels = [
+  // Step 2 options (title - description)
+  final List<String> experienceLevels = const [
     "Beginner - I'm just starting my cooking journey!",
-    'Intermediate - I can follow recipes confidently',
-    'Advanced - I love experimenting in the kitchen',
-    'Expert - I could teach others to cook'
+    'Comfortable - I can follow recipes confidently',
+    'Confident Chef - I love experimenting in the kitchen',
+  ];
+
+  final List<String> toolOptions = const [
+    'Air fryer',
+    'Slow cooker',
+    'Grill',
+    'Blender',
+    'Pressure cooker',
+    'Hand mixer',
+    'Microwave',
+    'None',
   ];
 
   final List<String> dietaryPreferences = [
@@ -453,7 +466,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle("What's your cooking experience level?"),
+                    _sectionTitle('How would you describe your kitchen comfort level?'),
                     const SizedBox(height: 16),
                     ...experienceLevels.asMap().entries.map((entry) {
                       final idx = entry.key;
@@ -473,11 +486,28 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       );
                     }),
                     _sectionRule(),
-                    _sectionTitle('Any tools you want to lean on?'),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'E.g., slow cooker, air fryer, grill... (optional)',
-                      style: TextStyle(color: Color(0xFF6B7280)),
+                    _sectionTitle('Which of these tools do you already have?'),
+                    const SizedBox(height: 16),
+                    MultiSelectPills(
+                      options: toolOptions,
+                      selectedOptions: selectedTools,
+                      onSelectionChanged: (tool) {
+                        setState(() {
+                          if (tool == 'None') {
+                            // Selecting None clears others; selecting others removes None
+                            selectedTools = selectedTools.contains('None')
+                                ? []
+                                : ['None'];
+                          } else {
+                            selectedTools.remove('None');
+                            if (selectedTools.contains(tool)) {
+                              selectedTools.remove(tool);
+                            } else {
+                              selectedTools.add(tool);
+                            }
+                          }
+                        });
+                      },
                     ),
                     const SizedBox(height: 24),
                     Row(
@@ -883,6 +913,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     final profileData = {
       'name': userName,
       'experience': selectedExperience,
+  'tools': selectedTools,
       'diets': selectedDiets,
       'allergies': selectedAllergies,
       'cuisines': selectedCuisines,
