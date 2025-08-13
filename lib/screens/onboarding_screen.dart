@@ -459,7 +459,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 step: 2,
                 totalSteps: 5,
                 title: 'Tools & Skills',
-                subtitle: "We'll tailor suggestions to your setup and comfort",
+                subtitle: 'Helps Nibble match recipes to your skills and tools.',
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
