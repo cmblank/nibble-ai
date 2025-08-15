@@ -7,8 +7,8 @@ import 'profile_screen.dart';
 import 'onboarding_screen.dart';
 import '../utils/profile_storage.dart';
 
-// Debug helper: set to true to always show onboarding welcome screen.
-const bool kForceOnboarding = true;
+// Debug helper: set to false to allow entering the app after onboarding.
+const bool kForceOnboarding = false;
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});

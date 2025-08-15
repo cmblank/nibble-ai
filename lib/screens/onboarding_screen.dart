@@ -1,6 +1,7 @@
 import '../config/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../utils/profile_storage.dart';
+import '../services/supabase_service.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/tertiary_button.dart';
 import '../widgets/select_card.dart';
@@ -14,10 +15,10 @@ class CookingProfileOnboarding extends StatefulWidget {
   final Map<String, dynamic>? initialData;
 
   const CookingProfileOnboarding({
-    super.key,
+    Key? key,
     required this.onFinish,
     this.initialData,
-  });
+  }) : super(key: key);
 
   @override
   State<CookingProfileOnboarding> createState() => _CookingProfileOnboardingState();
@@ -26,7 +27,7 @@ class CookingProfileOnboarding extends StatefulWidget {
 class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   int currentStep = 0;
   final ScrollController _scrollController = ScrollController();
-  
+
   // Profile data
   String userName = '';
   String selectedExperience = '';
@@ -35,343 +36,112 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   List<String> selectedCuisines = [];
   String selectedCookingTime = '';
   String selectedBudget = '';
-  // Step 2: Tools & Skills
   List<String> selectedTools = [];
 
-  // Step 4: Pantry Snapshot selections
-  // Options
+  // Pantry selections
   final List<String> proteinOptions = const [
-    'Chicken breast',
-    'Ground beef',
-    'Pork chops',
-    'Chicken thigh',
-    'Ground turkey',
-    'Steak',
-    'Tofu',
-    'Plant-based protein',
+    'Chicken breast', 'Ground beef', 'Pork chops', 'Chicken thigh', 'Ground turkey', 'Steak', 'Tofu', 'Plant-based protein',
   ];
-
   final List<String> veggieOptions = const [
-    'Onion',
-    'Tomatoes',
-    'Zucchini',
-    'Broccoli',
-    'Green beans',
-    'Corn',
-    'Carrots',
-    'Garlic',
-    'Bell Pepper',
-    'Beets',
-    'Lettuce',
-    'Spinach',
+    'Onion', 'Tomatoes', 'Zucchini', 'Broccoli', 'Green beans', 'Corn', 'Carrots', 'Garlic', 'Bell Pepper', 'Beets', 'Lettuce',
   ];
-
   final List<String> fruitOptions = const [
-    'Apples',
-    'Bananas',
-    'Lemons',
-    'Limes',
-    'Oranges',
-    'Strawberries',
-    'Grapes',
-    'Pears',
-    'Blueberries',
+    'Apples', 'Bananas', 'Lemons', 'Limes', 'Oranges', 'Strawberries', 'Grapes', 'Pears', 'Blueberries',
   ];
-
   final List<String> pantryStapleOptions = const [
-    'Olive Oil',
-    'Sugar',
-    'Canned beans',
-    'Canned tuna',
-    'Flour',
-    'Parsley',
-    'Oregano',
-    'Basil',
-    'Onion powder',
-    'Garlic powder',
-    'Paprika',
-    'Cumin',
-    'Chili powder',
-    'Salt',
-    'Pepper',
+    'Olive Oil', 'Sugar', 'Canned beans', 'Canned tuna', 'Flour', 'Parsley', 'Oregano', 'Basil', 'Onion powder', 'Garlic powder', 'Paprika', 'Cumin', 'Chili powder', 'Salt', 'Pepper',
   ];
-
   final List<String> grainsPastaOptions = const [
-    'Rice',
-    'Spaghetti',
-    'Pasta',
-    'Quinoa',
-    'Oats',
-    'Couscous',
+    'Rice', 'Spaghetti', 'Pasta', 'Quinoa', 'Oats', 'Couscous',
   ];
-
   final List<String> dairyAltOptions = const [
-    'Eggs',
-    'Milk',
-    'Greek yogurt',
-    'Shredded cheese',
-    'Oat Milk',
-    'Almond Milk',
-    'Butter',
-    'Coconut Milk',
-    'Ghee',
-    'Parmesan cheese',
+    'Eggs', 'Milk', 'Greek yogurt', 'Shredded cheese', 'Oat Milk', 'Almond Milk', 'Butter', 'Coconut Milk', 'Ghee', 'Parmesan cheese',
   ];
-
   final List<String> condimentOptions = const [
-    'Soy sauce',
-    'Hot sauce',
-    'Mustard',
-    'Mayonnaise',
-    'Ketchup',
-    'Honey',
-    'Peanut butter',
-    'Sriracha',
-    'Jam',
+    'Soy sauce', 'Hot sauce', 'Mustard', 'Mayonnaise', 'Ketchup', 'Honey', 'Peanut butter', 'Sriracha', 'Jam',
   ];
 
-  // Defaults (pre-selected common staples per mock)
-  List<String> selectedProteins = [
-    'Chicken breast',
-    'Ground turkey',
-    'Steak',
-  ];
-  List<String> selectedVeggies = [
-    'Onion',
-    'Zucchini',
-    'Broccoli',
-    'Corn',
-    'Carrots',
-    'Garlic',
-    'Bell Pepper',
-    'Lettuce',
-  ];
-  List<String> selectedFruits = [
-    'Lemons',
-    'Limes',
-    'Grapes',
-  ];
-  List<String> selectedPantryStaples = [
-    'Olive Oil',
-    'Sugar',
-    'Flour',
-    'Cumin',
-    'Chili powder',
-    'Salt',
-    'Pepper',
-  ];
-  List<String> selectedGrainsPasta = [
-    'Rice',
-    'Spaghetti',
-    'Pasta',
-    'Couscous',
-  ];
-  List<String> selectedDairyAlt = [
-    'Eggs',
-    'Milk',
-    'Shredded cheese',
-    'Butter',
-  ];
-  List<String> selectedCondiments = [
-    'Soy sauce',
-    'Ketchup',
-    'Honey',
-    'Peanut butter',
-  ];
+  List<String> selectedProteins = ['Chicken breast', 'Ground turkey', 'Steak'];
+  List<String> selectedVeggies = ['Onion', 'Zucchini', 'Broccoli', 'Corn', 'Carrots', 'Garlic', 'Bell Pepper', 'Lettuce'];
+  List<String> selectedFruits = ['Lemons', 'Limes', 'Grapes'];
+  List<String> selectedPantryStaples = ['Olive Oil', 'Sugar', 'Flour', 'Cumin', 'Chili powder', 'Salt', 'Pepper'];
+  List<String> selectedGrainsPasta = ['Rice', 'Spaghetti', 'Pasta', 'Couscous'];
+  List<String> selectedDairyAlt = ['Eggs', 'Milk', 'Shredded cheese', 'Butter'];
+  List<String> selectedCondiments = ['Soy sauce', 'Ketchup', 'Honey', 'Peanut butter'];
 
   // Step 1: Kitchen Life
-  int cookNightsCurrent = 0; // 0-7
-  int cookNightsGoal = 0; // 0-7
+  int cookNightsCurrent = 0;
+  int cookNightsGoal = 0;
   String household = '';
   String firstGoal = '';
   List<String> mealFocus = [];
   List<String> cookMotivations = [];
   List<String> cookBlockers = [];
 
-  // Hover tracking (desktop)
-  // (hover state managed within widgets as needed)
-
-  // Step 2 options (title - description)
+  // Step 2 options
   final List<String> experienceLevels = const [
     "Beginner - I'm just starting my cooking journey!",
     'Comfortable - I can follow recipes confidently',
     'Confident Chef - I love experimenting in the kitchen',
   ];
-
   final List<String> toolOptions = const [
-    'Air fryer',
-    'Slow cooker',
-    'Grill',
-    'Blender',
-    'Pressure cooker',
-    'Hand mixer',
-    'Microwave',
-    'None',
+    'Air fryer', 'Slow cooker', 'Grill', 'Blender', 'Pressure cooker', 'Hand mixer', 'Microwave', 'None',
   ];
 
-  // Step 3 options (updated to match mock)
+  // Step 3 options
   final List<String> dietaryPreferences = [
-    'Vegetarian',
-    'Vegan',
-    'Pescatarian',
-    'Keto / Low-carb',
-    'Gluten-free',
-    'Dairy-free',
-    'Paleo',
-    'Whole30',
-    'High Protein',
-    'Low sugar',
+    'Vegetarian', 'Vegan', 'Pescatarian', 'Keto / Low-carb', 'Gluten-free', 'Dairy-free', 'Paleo', 'Whole30', 'High Protein', 'Low sugar',
   ];
-
   final List<String> commonAllergies = [
-    'Shellfish',
-    'Peanuts',
-    'Tree nuts',
-    'Soy',
-    'Eggs',
-    'Mushrooms',
-    'Cilantro',
-    'Other',
-    'Pork',
+    'Shellfish', 'Peanuts', 'Tree nuts', 'Soy', 'Eggs', 'Mushrooms', 'Cilantro', 'Other', 'Pork',
   ];
-
   final List<String> cuisineTypes = [
-    'Any',
-    'Italian',
-    'Mexican',
-    'Asian',
-    'Mediterranean',
-    'Indian',
-    'Middle Eastern',
-    'American',
-    'French',
-    'Latin American',
-    'African',
+    'Any', 'Italian', 'Mexican', 'Asian', 'Mediterranean', 'Indian', 'Middle Eastern', 'American', 'French', 'Latin American', 'African',
   ];
-
   final List<String> cookingTimes = [
-    '15 minutes or less',
-    '15-30 minutes',
-    '30-60 minutes',
-    'Over 1 hour',
-    'I have all day!'
+    '15 minutes or less', '15-30 minutes', '30-60 minutes', 'Over 1 hour', 'I have all day!'
   ];
-
-  // Step 3: budget levels (title - description)
   final List<String> budgetLevels = [
-    'Low-budget - Keep costs down for everyday cooking',
-    'Moderate - Comfortable weekly shopping',
-    'Treat-yourself - Occasional splurges or premium ingredients',
+    'Low-budget - Keep costs down for everyday cooking', 'Moderate - Comfortable weekly shopping', 'Treat-yourself - Occasional splurges or premium ingredients',
   ];
 
-  // Options for Step 1 UI
+  // Step 1 UI options
   final List<String> householdOptions = const [
-    'Just me',
-    'Me & my partner',
-    'Small family (3-4)',
-    'Big family / group (5+)',
-    'Roommates / shared kitchen',
-    'Kids part-time',
+    'Just me', 'Me & my partner', 'Small family (3-4)', 'Big family / group (5+)', 'Roommates / shared kitchen', 'Kids part-time',
   ];
-
   final List<Map<String, String>> firstCookingGoals = const [
-    {
-      'title': 'Cut back on takeout',
-      'desc': "Swap delivery nights for quick, satisfying dinners you'll actually look forward to.",
-    },
-    {
-      'title': 'Add more vegetables',
-      'desc': 'Bring more greens and color to your plate without extra hassle.',
-    },
-    {
-      'title': 'Use what I have',
-      'desc': "Turn what's in your kitchen into dinners you'll be proud of.",
-    },
-    {
-      'title': 'Make cooking feel easier',
-      'desc': "Simple recipes now, skills you'll grow over time.",
-    },
+    {'title': 'Cut back on takeout', 'desc': "Swap delivery nights for quick, satisfying dinners you'll actually look forward to."},
+    {'title': 'Add more vegetables', 'desc': 'Bring more greens and color to your plate without extra hassle.'},
+    {'title': 'Use what I have', 'desc': "Turn what's in your kitchen into dinners you'll be proud of."},
+    {'title': 'Make cooking feel easier', 'desc': "Simple recipes now, skills you'll grow over time."},
   ];
-
   final List<String> mealFocusOptions = const [
-    '30-minute meals',
-    'Slow cooker',
-    'One pan meals',
-    'Grill & BBQ meals',
-    'Batch cook / meal prep',
-    'Small bites',
-    'Healthy snacks',
-    'Quick lunches',
-    'Light & fresh',
-    'Comfort food',
-    'Kid friendly',
-    'Special occasions',
+    '30-minute meals', 'Slow cooker', 'One pan meals', 'Grill & BBQ meals', 'Batch cook / meal prep', 'Small bites', 'Healthy snacks', 'Quick lunches', 'Light & fresh', 'Comfort food', 'Kid friendly', 'Special occasions',
   ];
-
   final List<String> motivationOptions = const [
-    'Eat healthier',
-    'Enjoy cooking more',
-    'Save money',
-    'Manage blood sugar',
-    'Reduce takeout',
-    'Learn new recipes',
+    'Eat healthier', 'Enjoy cooking more', 'Save money', 'Manage blood sugar', 'Reduce takeout', 'Learn new recipes',
   ];
-
   final List<String> blockerOptions = const [
-    'No time',
-    'low energy',
-    "Don't know what to make",
-    'Hate grocery shopping',
-    'Lack of confidence',
+    'No time', 'low energy', "Don't know what to make", 'Hate grocery shopping', 'Lack of confidence',
   ];
 
   // Step 5: Staying in Sync
-  // Support up to two shopping days
   List<String> shoppingDays = [];
-  // Legacy single-day fields kept for backward compatibility in storage
   String shoppingDay = '';
   String shoppingDayCustom = '';
   final List<String> dayOfWeekOptions = const [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
+    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
   ];
-  // single-select via chips; no additional state needed
   List<String> shoppingStores = [];
   final List<String> storeOptions = const [
-    'Walmart',
-    'Target',
-    'Costco',
-    'Kroger',
-    'Whole Foods',
-    'Sprouts',
-    "Trader Joe’s",
-    'Safeway',
-    'Aldi',
-    'Publix',
+    'Walmart', 'Target', 'Costco', 'Kroger', 'Whole Foods', 'Sprouts', "Trader Joe’s", 'Safeway', 'Aldi', 'Publix',
   ];
   String checkInFrequency = '';
   final List<Map<String, String>> frequencyOptions = const [
-    {
-      'title': 'Every day',
-      'desc': "Keep the ideas coming, I'm here for it",
-    },
-    {
-      'title': 'A few times a week',
-      'desc': "A few times a week, when it'll really help.",
-    },
-    {
-      'title': 'Rarely',
-      'desc': 'Only for the important stuff',
-    },
-    {
-      'title': 'Only when you ask',
-      'desc': "I’ll be available when you call me in",
-    },
+    {'title': 'Every day', 'desc': "Keep the ideas coming, I'm here for it"},
+    {'title': 'A few times a week', 'desc': "A few times a week, when it'll really help."},
+    {'title': 'Rarely', 'desc': 'Only for the important stuff'},
+    {'title': 'Only when you ask', 'desc': "I’ll be available when you call me in"},
   ];
   bool simpleSuppersEnabled = true;
 
@@ -406,15 +176,12 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     selectedCuisines = List<String>.from(data['cuisines'] ?? []);
     selectedCookingTime = data['cookingTime'] ?? '';
     selectedBudget = data['budget'] ?? '';
-    // Step 5
-    // New multi-day support (up to 2). Load new field first, else migrate from legacy fields.
     final List<String> loadedShoppingDays = List<String>.from(data['shoppingDays'] ?? const []);
     if (loadedShoppingDays.isNotEmpty) {
       shoppingDays = loadedShoppingDays.take(2).toList();
     } else {
       shoppingDay = data['shoppingDay'] ?? shoppingDay;
       shoppingDayCustom = data['shoppingDayCustom'] ?? shoppingDayCustom;
-      // migrate old "Custom" selection to a concrete day
       if (shoppingDay == 'Custom' && shoppingDayCustom.isNotEmpty) {
         shoppingDay = shoppingDayCustom;
       }
@@ -422,13 +189,11 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
         shoppingDays = [shoppingDay];
       }
     }
-    // Keep legacy single-day fields aligned to the first selection for backward compat
     shoppingDay = shoppingDays.isNotEmpty ? shoppingDays.first : '';
     shoppingDayCustom = shoppingDay;
     shoppingStores = List<String>.from(data['shoppingStores'] ?? shoppingStores);
     checkInFrequency = data['checkInFrequency'] ?? checkInFrequency;
     simpleSuppersEnabled = data['simpleSuppersEnabled'] ?? simpleSuppersEnabled;
-    // Pantry (optional)
     final pantry = data['pantry'];
     if (pantry is Map) {
       selectedProteins = List<String>.from(pantry['proteins'] ?? selectedProteins);
@@ -445,14 +210,14 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     setState(() {
       currentStep = (currentStep + 1).clamp(0, 6);
     });
-  _scrollToTop();
+    _scrollToTop();
   }
 
   void _previousStep() {
     setState(() {
       currentStep = (currentStep - 1).clamp(0, 6);
     });
-  _scrollToTop();
+    _scrollToTop();
   }
 
   @override
@@ -467,6 +232,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     return const SizedBox.shrink();
   }
 
+  // Step 1: Kitchen life
   Widget _buildWelcomeScreen() {
     return Scaffold(
       backgroundColor: AppColors.gardenHerb,
@@ -743,10 +509,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       onSelectionChanged: (tool) {
                         setState(() {
                           if (tool == 'None') {
-                            // Selecting None clears others; selecting others removes None
-                            selectedTools = selectedTools.contains('None')
-                                ? []
-                                : ['None'];
+                            selectedTools = selectedTools.contains('None') ? [] : ['None'];
                           } else {
                             selectedTools.remove('None');
                             if (selectedTools.contains(tool)) {
@@ -1233,7 +996,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       children: [
                         TertiaryButton(label: 'Back', onPressed: _previousStep),
                         PrimaryButton(
-                          label: 'Save My Preferences',
+                          label: "Let's get cooking!",
                           onPressed: _saveAndFinish,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           fontSize: 16,
@@ -1326,8 +1089,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     );
   }
 
-  // Helpers
-
+  // Helper widgets
   Widget _sectionTitle(String title, [String? subtitle]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1372,20 +1134,18 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     final profileData = {
       'name': userName,
       'experience': selectedExperience,
-  'tools': selectedTools,
+      'tools': selectedTools,
       'diets': selectedDiets,
       'allergies': selectedAllergies,
       'cuisines': selectedCuisines,
       'cookingTime': selectedCookingTime,
       'budget': selectedBudget,
-  // New multi-day support
-  'shoppingDays': shoppingDays,
-  // Legacy single-day fields for backward compatibility
-  'shoppingDay': shoppingDay,
-  'shoppingDayCustom': shoppingDayCustom,
-  'shoppingStores': shoppingStores,
-  'checkInFrequency': checkInFrequency,
-  'simpleSuppersEnabled': simpleSuppersEnabled,
+      'shoppingDays': shoppingDays,
+      'shoppingDay': shoppingDay,
+      'shoppingDayCustom': shoppingDayCustom,
+      'shoppingStores': shoppingStores,
+      'checkInFrequency': checkInFrequency,
+      'simpleSuppersEnabled': simpleSuppersEnabled,
       'pantry': {
         'proteins': selectedProteins,
         'veggies': selectedVeggies,
@@ -1395,7 +1155,6 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
         'dairyAlternatives': selectedDairyAlt,
         'condiments': selectedCondiments,
       },
-      // Step 1 fields
       'cookNightsCurrent': cookNightsCurrent,
       'cookNightsGoal': cookNightsGoal,
       'household': household,
@@ -1407,6 +1166,17 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     };
 
     await ProfileStorage.saveProfile(profileData);
+    try {
+      final userId = SupabaseService.currentUser?.id;
+      if (userId != null) {
+        await SupabaseService.updateUserProfile(
+          userId: userId,
+          data: profileData,
+        );
+      }
+    } catch (e) {
+      print('Supabase sync failed: ' + e.toString());
+    }
     widget.onFinish();
   }
 }
