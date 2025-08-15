@@ -30,7 +30,7 @@ class MessageBubble extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withAlpha((255 * 0.1).round()),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -250,7 +250,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha((255 * 0.1).round()),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -264,7 +264,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       decoration: InputDecoration(
                         hintText: 'Ask me about cooking anything...',
                         hintStyle: TextStyle(
-                          color: AppColors.deepRoast.withOpacity(0.5),
+                          color: AppColors.deepRoast.withAlpha((255 * 0.5).round()),
                           fontFamily: 'Manrope',
                         ),
                         border: OutlineInputBorder(
@@ -272,7 +272,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: AppColors.creamWhisk.withOpacity(0.5),
+                        fillColor: AppColors.creamWhisk.withAlpha((255 * 0.5).round()),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,

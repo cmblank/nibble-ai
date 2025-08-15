@@ -151,7 +151,7 @@ class ComponentTokens {
       borderRadius: BorderRadius.circular(borderRadius ?? RadiusTokens.xl),
       boxShadow: [
         BoxShadow(
-          color: DesignTokens.gray400.withOpacity(0.1),
+          color: DesignTokens.gray400.withAlpha((255 * 0.1).round()),
           blurRadius: elevation ?? 8.0,
           offset: const Offset(0, 2),
         ),

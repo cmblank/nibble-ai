@@ -230,7 +230,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeOut,
         color: _recentlyAddedIds.contains(item.id)
-            ? AppColors.gardenHerb.withOpacity(0.12)
+            ? AppColors.gardenHerb.withAlpha((255 * 0.12).round())
             : null,
         child: ListTile(
         leading: Checkbox(
@@ -266,7 +266,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: _getSourceColor(item.source).withOpacity(0.1),
+                  color: _getSourceColor(item.source).withAlpha((255 * 0.1).round()),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -49,7 +50,7 @@ class SupabaseService {
       );
       return res.user != null;
     } catch (e) {
-      print('Error updating password: $e');
+  developer.log('Error updating password', error: e, name: 'SupabaseService');
       return false;
     }
   }
@@ -61,7 +62,7 @@ class SupabaseService {
         redirectTo: 'io.supabase.nibbleai://auth-callback',
       );
     } catch (e) {
-      print('Error signing in with Google: $e');
+  developer.log('Error signing in with Google', error: e, name: 'SupabaseService');
       return false;
     }
   }
@@ -79,14 +80,16 @@ class SupabaseService {
   // User profile methods (example)
   static Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
-      final response = await _client
+  final response = await _client
           .from('profiles')
           .select()
           .eq('id', userId)
-          .single();
-      return response;
+          .limit(1);
+  final list = List<Map<String, dynamic>>.from(response as List);
+  if (list.isNotEmpty) return list.first;
+      return null;
     } catch (e) {
-      print('Error fetching user profile: $e');
+  developer.log('Error fetching user profile', error: e, name: 'SupabaseService');
       return null;
     }
   }
@@ -102,7 +105,32 @@ class SupabaseService {
           .eq('id', userId);
       return true;
     } catch (e) {
-      print('Error updating user profile: $e');
+  developer.log('Error updating user profile', error: e, name: 'SupabaseService');
+      return false;
+    }
+  }
+
+  // Optional: Upsert profile row if missing and ensure JSON column usage
+  static Future<bool> upsertProfileJson({
+    required String userId,
+    required Map<String, dynamic> profileJson,
+  }) async {
+    try {
+      final email = _client.auth.currentUser?.email;
+      final payload = <String, dynamic>{
+        'id': userId,
+        'profile_data': profileJson,
+      };
+      if (email != null) {
+        payload['email'] = email;
+      }
+      await _client
+          .from('profiles')
+          .upsert(payload)
+          .eq('id', userId);
+      return true;
+    } catch (e) {
+  developer.log('Error upserting profile JSON', error: e, name: 'SupabaseService');
       return false;
     }
   }
@@ -117,7 +145,7 @@ class SupabaseService {
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error fetching user recipes: $e');
+  developer.log('Error fetching user recipes', error: e, name: 'SupabaseService');
       return [];
     }
   }
@@ -135,7 +163,7 @@ class SupabaseService {
       });
       return true;
     } catch (e) {
-      print('Error saving user recipe: $e');
+  developer.log('Error saving user recipe', error: e, name: 'SupabaseService');
       return false;
     }
   }
@@ -157,7 +185,7 @@ class SupabaseService {
       });
       return true;
     } catch (e) {
-      print('Error saving daily check-in: $e');
+  developer.log('Error saving daily check-in', error: e, name: 'SupabaseService');
       return false;
     }
   }
@@ -171,7 +199,7 @@ class SupabaseService {
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error fetching daily check-ins: $e');
+  developer.log('Error fetching daily check-ins', error: e, name: 'SupabaseService');
       return [];
     }
   }
@@ -186,7 +214,7 @@ class SupabaseService {
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error fetching pantry items: $e');
+  developer.log('Error fetching pantry items', error: e, name: 'SupabaseService');
       return [];
     }
   }
@@ -207,7 +235,7 @@ class SupabaseService {
       });
       return true;
     } catch (e) {
-      print('Error adding pantry item: $e');
+  developer.log('Error adding pantry item', error: e, name: 'SupabaseService');
       return false;
     }
   }

@@ -27,8 +27,8 @@ class AuthWrapper extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.nibbleRed.withOpacity(0.1),
-                          AppColors.gardenHerb.withOpacity(0.1),
+                          AppColors.nibbleRed.withAlpha((255 * 0.1).round()),
+                          AppColors.gardenHerb.withAlpha((255 * 0.1).round()),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,

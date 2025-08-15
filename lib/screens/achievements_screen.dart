@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/app_colors.dart';
+import '../services/supabase_service.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -11,11 +12,16 @@ class AchievementsScreen extends StatefulWidget {
 class _AchievementsScreenState extends State<AchievementsScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  bool _loading = true;
+  String? _error;
+  List<Map<String, dynamic>> _completed = const [];
+  List<Map<String, dynamic>> _inProgress = const [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _fetchAchievements();
   }
 
   @override
@@ -63,13 +69,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                             color: Color(0xFF1F2937),
                           ),
                         ),
-                        Text(
-                          '3 completed',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
+                        // Design keeps header clean; errors show inside tabs
                       ],
                     ),
                   ),
@@ -99,12 +99,12 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                 ),
                 tabs: const [
                   Tab(
-                    icon: Text('✨'),
-                    text: 'Recently Completed',
-                  ),
-                  Tab(
                     icon: Text('🎯'),
                     text: 'In Progress',
+                  ),
+                  Tab(
+                    icon: Text('✨'),
+                    text: 'Completed',
                   ),
                 ],
               ),
@@ -114,8 +114,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildRecentlyCompletedTab(),
                   _buildInProgressTab(),
+                  _buildRecentlyCompletedTab(),
                 ],
               ),
             ),
@@ -126,177 +126,201 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   }
 
   Widget _buildRecentlyCompletedTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          _buildCompletedAchievement(
-            icon: '🍳',
-            title: 'Recipe Explorer',
-            description: 'Cooked 3 new recipes this week',
-            timeframe: 'This week',
-            backgroundColor: const Color(0xFFD1FAE5),
-            iconBackgroundColor: const Color(0xFF059669),
-          ),
-          const SizedBox(height: 16),
-          _buildCompletedAchievement(
-            icon: '⭐',
-            title: 'First Steps',
-            description: 'Cooked your very first recipe with Nibble',
-            timeframe: '2 weeks ago',
-            backgroundColor: const Color(0xFFDDD6FE),
-            iconBackgroundColor: const Color(0xFF7C3AED),
-          ),
-          const SizedBox(height: 16),
-          _buildCompletedAchievement(
-            icon: '🔥',
-            title: 'Cooking Streak',
-            description: 'Cooked for 5 days in a row',
-            timeframe: 'Today',
-            backgroundColor: const Color(0xFFFEF3C7),
-            iconBackgroundColor: const Color(0xFFF59E0B),
-          ),
-        ],
+    if (_loading) {
+      return const Center(child: Padding(
+        padding: EdgeInsets.all(24.0),
+        child: CircularProgressIndicator(),
+      ));
+    }
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Text(_error!, style: const TextStyle(color: Colors.redAccent)),
+        ),
+      );
+    }
+    if (_completed.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text('No achievements completed yet.'),
+        ),
+      );
+    }
+    final palette = _colorPalette();
+    return RefreshIndicator(
+      onRefresh: _fetchAchievements,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final crossAxisCount = width > 480 ? 3 : 2;
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _completed.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.92,
+              ),
+              itemBuilder: (context, i) {
+                final r = _completed[i];
+                final (bg, fg) = palette[i % palette.length];
+                return _CompletedCard(
+                  iconUrl: r['icon_url'] as String?,
+                  period: r['period']?.toString() ?? '',
+                  title: r['name']?.toString() ?? 'Achievement',
+                  subtitle: r['description']?.toString() ?? '',
+                  accentBg: bg,
+                  accentFg: fg,
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildInProgressTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // Weekly Cooking Streak Card
-          _buildWeeklyCookingStreak(),
-          const SizedBox(height: 20),
-          
-          // Weekly Challenges Section
-          _buildWeeklyChallengesSection(),
-          const SizedBox(height: 20),
-          
-          // Progress Achievements
-          _buildProgressAchievement(
-            icon: '👨‍🍳',
-            title: 'Monthly Chef',
-            description: 'Cook 15 recipes in one month',
-            progress: 12,
-            total: 15,
-            progressPercentage: 80,
-            backgroundColor: const Color(0xFFFEF3C7),
-            iconBackgroundColor: const Color(0xFF3B82F6),
-          ),
-          const SizedBox(height: 16),
-          _buildProgressAchievement(
-            icon: '💝',
-            title: 'Self-Care Champion',
-            description: 'Complete 10 daily check-ins',
-            progress: 7,
-            total: 10,
-            progressPercentage: 70,
-            backgroundColor: const Color(0xFFFCE7F3),
-            iconBackgroundColor: const Color(0xFFEC4899),
-          ),
-          const SizedBox(height: 16),
-          _buildProgressAchievement(
-            icon: '🥬',
-            title: 'Pantry Master',
-            description: 'Use up ingredients before they expire 5 times',
-            progress: 3,
-            total: 5,
-            progressPercentage: 60,
-            backgroundColor: const Color(0xFFE0F2FE),
-            iconBackgroundColor: const Color(0xFF0EA5E9),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompletedAchievement({
-    required String icon,
-    required String title,
-    required String description,
-    required String timeframe,
-    required Color backgroundColor,
-    required Color iconBackgroundColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: iconBackgroundColor.withOpacity(0.2),
-          width: 1,
+    if (_loading) {
+      return const Center(child: Padding(
+        padding: EdgeInsets.all(24.0),
+        child: CircularProgressIndicator(),
+      ));
+    }
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Text(_error!, style: const TextStyle(color: Colors.redAccent)),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: iconBackgroundColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                icon,
-                style: const TextStyle(fontSize: 24),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      );
+    }
+    final palette = _colorPalette();
+    return RefreshIndicator(
+      onRefresh: _fetchAchievements,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildWeeklyCookingStreak(),
+            const SizedBox(height: 20),
+            _buildWeeklyChallengesSection(),
+            const SizedBox(height: 20),
+            // Monthly header (static demo label; can be made dynamic from period)
+            Row(
+              children: const [
                 Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  'September Challenges',
+                  style: TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1F2937),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  timeframe,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: iconBackgroundColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ],
             ),
-          ),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: iconBackgroundColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            for (var i = 0; i < _inProgress.length; i++) ...[
+              _buildProgressAchievement(
+                icon: '🎯',
+                title: _inProgress[i]['name']?.toString() ?? 'Achievement',
+                description: _inProgress[i]['description']?.toString() ?? '',
+                progress: (_inProgress[i]['progress_value'] as num?)?.toInt() ?? 0,
+                total: (_inProgress[i]['target_value'] as num?)?.toInt() ?? 0,
+                progressPercentage: _computePercent(_inProgress[i]),
+                backgroundColor: palette[i % palette.length].$1,
+                iconBackgroundColor: palette[i % palette.length].$2,
+              ),
+              if (i < _inProgress.length - 1) const SizedBox(height: 16),
+            ],
+            if (_inProgress.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text('No in-progress achievements yet.'),
+              ),
+          ],
+        ),
       ),
     );
   }
+
+  // Old completed card removed (replaced by grid card component below).
+
+  // Data
+  Future<void> _fetchAchievements() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final user = SupabaseService.currentUser;
+      if (user == null) {
+        setState(() {
+          _loading = false;
+          _error = 'Not signed in';
+        });
+        return;
+      }
+      final data = await SupabaseService.client
+          .from('v_user_achievements')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('status', ascending: true)
+          .order('period', ascending: true)
+          .order('name', ascending: true);
+      final rows = List<Map<String, dynamic>>.from(data as List);
+      final completed = <Map<String, dynamic>>[];
+      final inProgress = <Map<String, dynamic>>[];
+      for (final r in rows) {
+        final status = r['status']?.toString().toLowerCase();
+        if (status == 'completed') {
+          completed.add(r);
+        } else {
+          inProgress.add(r);
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _completed = completed;
+        _inProgress = inProgress;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Failed to load: $e';
+      });
+    }
+  }
+
+  int _computePercent(Map<String, dynamic> row) {
+    final ratio = (row['progress_ratio'] as num?)?.toDouble();
+    if (ratio != null) {
+      final pct = (ratio * 100).clamp(0, 100);
+      return pct.round();
+    }
+    final progress = (row['progress_value'] as num?)?.toDouble() ?? 0;
+    final target = (row['target_value'] as num?)?.toDouble() ?? 0;
+    if (target <= 0) return 0;
+    return ((progress / target) * 100).clamp(0, 100).round();
+  }
+
+  List<(Color, Color)> _colorPalette() => const [
+        (Color(0xFFD1FAE5), Color(0xFF059669)),
+        (Color(0xFFFCE7F3), Color(0xFFEC4899)),
+        (Color(0xFFE0F2FE), Color(0xFF0EA5E9)),
+        (Color(0xFFFEF3C7), Color(0xFFF59E0B)),
+        (Color(0xFFDDD6FE), Color(0xFF7C3AED)),
+      ];
 
   Widget _buildProgressAchievement({
     required String icon,
@@ -314,7 +338,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: iconBackgroundColor.withOpacity(0.2),
+          color: iconBackgroundColor.withAlpha((255 * 0.2).round()),
           width: 1,
         ),
       ),
@@ -392,7 +416,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withAlpha((255 * 0.5).round()),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: FractionallySizedBox(
@@ -414,8 +438,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   }
 
   Widget _buildWeeklyCookingStreak() {
-    const cookingDays = [true, true, false, true, true, false, false]; // Mon-Sun
-    const currentStreak = 2;
+  const cookingDays = [true, true, false, true, true, false, false]; // Mon-Sun
+  const daysLeft = 2; // demo
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -427,7 +451,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF059669).withOpacity(0.2),
+          color: const Color(0xFF059669).withAlpha((255 * 0.2).round()),
           width: 1,
         ),
       ),
@@ -461,7 +485,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                       ),
                     ),
                     Text(
-                      'You\'ve cooked 2x this week! 🍳',
+                      'You\'ve cooked 4x this week! 🍳',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B7280),
@@ -477,7 +501,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '$currentStreak days',
+                  '$daysLeft days left',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -502,7 +526,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
             children: List.generate(7, (index) {
               const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
               final isCompleted = cookingDays[index];
-              final isToday = index == 4; // Friday
+              final isToday = index == 5; // Saturday (demo to match screenshot ring)
               
               return Column(
                 children: [
@@ -524,7 +548,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                       color: isCompleted 
                           ? const Color(0xFF059669)
                           : isToday
-                              ? const Color(0xFF059669).withOpacity(0.2)
+                              ? const Color(0xFF059669).withAlpha((255 * 0.2).round())
                               : const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(16),
                       border: isToday 
@@ -560,7 +584,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Weekly Challenges',
+          'This Weeks Challenges',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -617,73 +641,175 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isCompleted 
-            ? const Color(0xFFD1FAE5)
-            : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isCompleted 
-              ? const Color(0xFF059669).withOpacity(0.3)
-              : const Color(0xFFE5E7EB),
+          color: const Color(0xFFE5E7EB),
           width: 1,
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isCompleted 
-                        ? const Color(0xFF059669)
-                        : const Color(0xFF1F2937),
+          Row(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isCompleted)
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF059669),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 16),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$progress/$total',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF3B82F6),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF6B7280),
-                    height: 1.3,
-                  ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 8,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5E7EB),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: total > 0 ? (progress / total).clamp(0, 1) : 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isCompleted ? const Color(0xFF10B981) : const Color(0xFF7C3AED),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-              ],
+              ),
             ),
           ),
-          if (isCompleted)
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: const Color(0xFF059669),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.check, color: Colors.white, size: 16),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '$progress/$total',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF3B82F6),
+        ],
+      ),
+    );
+  }
+}
+
+// Completed grid card matching design
+class _CompletedCard extends StatelessWidget {
+  final String? iconUrl;
+  final String period;
+  final String title;
+  final String subtitle;
+  final Color accentBg;
+  final Color accentFg;
+
+  const _CompletedCard({
+    required this.iconUrl,
+    required this.period,
+    required this.title,
+    required this.subtitle,
+    required this.accentBg,
+    required this.accentFg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2)),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: accentBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: iconUrl != null && iconUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(iconUrl!, width: 44, height: 44, fit: BoxFit.cover),
+                        )
+                      : Text('🏆', style: TextStyle(fontSize: 22, color: accentFg)),
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  period,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280), fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.3),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );

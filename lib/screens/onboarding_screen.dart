@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import '../config/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../utils/profile_storage.dart';
@@ -15,10 +16,10 @@ class CookingProfileOnboarding extends StatefulWidget {
   final Map<String, dynamic>? initialData;
 
   const CookingProfileOnboarding({
-    Key? key,
+    super.key,
     required this.onFinish,
     this.initialData,
-  }) : super(key: key);
+  });
 
   @override
   State<CookingProfileOnboarding> createState() => _CookingProfileOnboardingState();
@@ -247,7 +248,7 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withAlpha((255 * 0.08).round()),
                     blurRadius: 24,
                     offset: const Offset(0, 12),
                   ),
@@ -1191,13 +1192,14 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     try {
       final userId = SupabaseService.currentUser?.id;
       if (userId != null) {
-        await SupabaseService.updateUserProfile(
+        // Upsert ensures the row exists and writes the JSON payload
+        await SupabaseService.upsertProfileJson(
           userId: userId,
-          data: profileData,
+          profileJson: profileData,
         );
       }
     } catch (e) {
-      print('Supabase sync failed: ' + e.toString());
+  developer.log('Supabase sync failed: ${e.toString()}', name: 'Onboarding');
     }
     widget.onFinish();
   }

@@ -222,7 +222,7 @@ class DesignTokensExample extends StatelessWidget {
             width: space,
             height: 16,
             decoration: BoxDecoration(
-              color: DesignTokens.gardenHerb.withOpacity(0.3),
+              color: DesignTokens.gardenHerb.withAlpha((255 * 0.3).round()),
               borderRadius: BorderRadius.circular(RadiusTokens.sm),
             ),
           ),

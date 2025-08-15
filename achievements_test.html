@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Nibble Achievements Test</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 680px; margin: 32px auto; }
+      button { padding: 8px 12px; margin-right: 8px; }
+      pre { background:#f6f6f6; padding:12px; border-radius:8px; overflow:auto; }
+      .card { border:1px solid #eee; border-radius:12px; padding:12px; margin:8px 0; display:flex; gap:12px; align-items:center; }
+      .icon { width:44px; height:44px; object-fit:contain; }
+      .bar { background:#eee; height:8px; border-radius:999px; overflow:hidden; margin:6px 0; }
+      .fill { height:8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Nibble Gamification — Smoke Test</h1>
+
+    <div>
+      <input id="email" placeholder="email" />
+      <input id="password" type="password" placeholder="password" />
+      <button id="signup">Sign Up (auto-confirm)</button>
+      <button id="signin">Sign In</button>
+    </div>
+
+    <div style="margin:16px 0;">
+      <button id="logMeal">Log Meal (greens, 18min, seasonal)</button>
+      <button id="pantryUsed">Pantry Used (21 days old)</button>
+      <button id="leftover">Leftover Repurposed</button>
+    </div>
+
+    <div>
+      <button id="refresh">Refresh Achievements</button>
+    </div>
+
+    <h2>Achievements</h2>
+    <div id="list"></div>
+
+    <h3>Raw Response</h3>
+    <pre id="out"></pre>
+
+    <script type="module">
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+      // Filled in with your actual values:
+      const url = 'https://ogtvkcbgousqxhilvsov.supabase.co';
+      const anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ndHZrY2Jnb3VzcXhoaWx2c292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2MjI0NjUsImV4cCI6MjA3MDE5ODQ2NX0.ljO1VpFnMLeEDY4q2vmJI53_30snPpEyHbqIi69bJdM';
+
+      const functionsUrl = `${url}/functions/v1`;
+      const supabase = createClient(url, anon);
+
+      const out = (msg) => document.getElementById('out').textContent = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2);
+
+      async function getUser() {
+        const { data } = await supabase.auth.getSession();
+        return data.session?.user ?? null;
+      }
+
+      async function requireUser() {
+        const u = await getUser();
+        if (!u) throw new Error('Not signed in');
+        return u;
+      }
+
+      async function callEvent(event_type, value) {
+        const session = (await supabase.auth.getSession()).data.session;
+        if (!session) throw new Error('Not signed in');
+        const res = await fetch(`${functionsUrl}/gamification-event`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            event_type,
+            value
+          })
+        });
+        const json = await res.json();
+        out(json);
+        await refresh();
+      }
+
+      async function refresh() {
+        const user = await requireUser();
+        const { data, error } = await supabase
+          .from('v_user_achievements')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('status', { ascending: true })
+          .order('period', { ascending: true })
+          .order('name', { ascending: true });
+        if (error) return out(error);
+        renderList(data || []);
+      }
+
+      function renderList(rows) {
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        rows.forEach(r => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          if (r.icon_url) {
+            const img = document.createElement('img');
+            img.className = 'icon';
+            img.src = r.icon_url;
+            card.appendChild(img);
+          }
+          const meta = document.createElement('div');
+          meta.style.flex = 1;
+          meta.innerHTML = `
+            <div><strong>${r.name}</strong> · <small>${r.period}</small></div>
+            <div>${r.description ?? ''}</div>
+            <div class="bar"><div class="fill" style="width:${Math.round((r.progress_ratio||0)*100)}%"></div></div>
+            <div>${r.progress_value} / ${r.target_value} ${r.status === 'completed' ? '✅' : ''}</div>
+          `;
+          card.appendChild(meta);
+          list.appendChild(card);
+        });
+      }
+
+      // UI hooks
+      document.getElementById('signup').onclick = async () => {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        out(error || data);
+      };
+
+      document.getElementById('signin').onclick = async () => {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        out(error || data);
+        if (!error) await refresh();
+      };
+
+      document.getElementById('logMeal').onclick = async () => {
+        await callEvent('meal_cooked', {
+          recipe_id: 'spaghetti-001',
+          new_recipe: true,
+          greens: true,
+          colors: 3,
+          duration_min: 18,
+          pantry_only: false,
+          is_seasonal: true,
+          cuisine: 'Italian',
+          home_meal: true
+        });
+      };
+
+      document.getElementById('pantryUsed').onclick = async () => {
+        await callEvent('pantry_used', { age_days: 21 });
+      };
+
+      document.getElementById('leftover').onclick = async () => {
+        await callEvent('leftover_repurposed', { from_recipe_id: 'spaghetti-001', to_recipe_id: 'baked-pasta-002' });
+      };
+
+      document.getElementById('refresh').onclick = refresh;
+    </script>
+  </body>
+</html>

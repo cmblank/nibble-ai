@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../utils/profile_storage.dart';
 import '../config/app_colors.dart';
 import 'onboarding_screen.dart';
 import 'achievements_screen.dart';
 import 'chat_screen.dart';
 import 'main_app.dart';
+import '../services/supabase_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -139,7 +141,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.deepRoast.withOpacity(0.05),
+            color: AppColors.deepRoast.withAlpha((255 * 0.05).round()),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -441,7 +443,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF8B5CF6).withOpacity(0.3),
+              color: const Color(0xFF8B5CF6).withAlpha((255 * 0.3).round()),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -453,7 +455,7 @@ class HomeScreen extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withAlpha((255 * 0.2).round()),
                 borderRadius: BorderRadius.circular(25),
               ),
               child: const Center(
@@ -478,7 +480,7 @@ class HomeScreen extends StatelessWidget {
                     'How are you feeling about cooking today?',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withAlpha((255 * 0.9).round()),
                     ),
                   ),
                 ],
@@ -487,7 +489,7 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withAlpha((255 * 0.2).round()),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
@@ -879,6 +881,51 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ProfileMenuItem(
+                      icon: '🗂️',
+                      title: 'Show Stored Profile (Supabase)',
+                      subtitle: 'View profile_data JSON saved to the cloud',
+                      onTap: () async {
+                        Navigator.pop(context);
+                        final userId = SupabaseService.currentUser?.id;
+                        if (userId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Not signed in.')),
+                          );
+                          return;
+                        }
+                        try {
+                          final profile = await SupabaseService.getUserProfile(userId);
+                          final jsonObj = profile?['profile_data'];
+                          final pretty = const JsonEncoder.withIndent('  ').convert(jsonObj ?? {'note': 'profile_data is null'});
+                          if (!context.mounted) return;
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('profiles.profile_data'),
+                              content: SizedBox(
+                                width: 600,
+                                child: SingleChildScrollView(
+                                  child: SelectableText(pretty),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Close'),
+                                ),
+                              ],
+                            ),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to load profile: $e')),
+                          );
+                        }
                       },
                     ),
                     const SizedBox(height: 16),

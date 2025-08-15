@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
@@ -20,7 +21,7 @@ void main() async {
   // are received when launching from email links on macOS.
   // ignore: avoid_print
   Supabase.instance.client.auth.onAuthStateChange.listen(
-    (data) => print('Auth state: ${data.event}, hasSession=${data.session != null}')
+  (data) => developer.log('Auth state: ${data.event}, hasSession=${data.session != null}', name: 'Auth')
   );
 
   runApp(const MyApp());

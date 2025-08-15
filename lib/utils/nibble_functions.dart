@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import '../services/supabase_service.dart';
 
 class NibbleFunctions {
@@ -26,7 +27,7 @@ class NibbleFunctions {
       );
       return response;
     } catch (e) {
-      print('Error logging mood: $e');
+  developer.log('Error logging mood', error: e, name: 'NibbleFunctions');
       return false;
     }
   }
@@ -39,7 +40,7 @@ class NibbleFunctions {
 
       return await SupabaseService.getUserPantryItems(userId);
     } catch (e) {
-      print('Error getting pantry: $e');
+  developer.log('Error getting pantry', error: e, name: 'NibbleFunctions');
       return [];
     }
   }
@@ -62,7 +63,7 @@ class NibbleFunctions {
       );
       return response;
     } catch (e) {
-      print('Error adding to pantry: $e');
+  developer.log('Error adding to pantry', error: e, name: 'NibbleFunctions');
       return false;
     }
   }
@@ -120,7 +121,7 @@ class NibbleFunctions {
         return true;
       }).toList();
     } catch (e) {
-      print('Error suggesting meals: $e');
+  developer.log('Error suggesting meals', error: e, name: 'NibbleFunctions');
       return [];
     }
   }
@@ -152,7 +153,7 @@ class NibbleFunctions {
       );
       return response;
     } catch (e) {
-      print('Error logging cooking activity: $e');
+  developer.log('Error logging cooking activity', error: e, name: 'NibbleFunctions');
       return false;
     }
   }
@@ -196,7 +197,7 @@ class NibbleFunctions {
       
       return streak;
     } catch (e) {
-      print('Error getting cooking streak: $e');
+  developer.log('Error getting cooking streak', error: e, name: 'NibbleFunctions');
       return 0;
     }
   }
@@ -209,7 +210,7 @@ class NibbleFunctions {
 
       return await SupabaseService.getUserProfile(userId);
     } catch (e) {
-      print('Error getting user preferences: $e');
+  developer.log('Error getting user preferences', error: e, name: 'NibbleFunctions');
       return null;
     }
   }

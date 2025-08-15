@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
@@ -14,7 +15,7 @@ class DeepLinkLogger {
   final initialUri = await appLinks.getInitialLink();
       if (initialUri != null) {
         // ignore: avoid_print
-        print('[DeepLink] initial: $initialUri');
+  developer.log('initial: $initialUri', name: 'DeepLink');
       }
 
       // Listen for subsequent incoming links while app is running
@@ -22,16 +23,16 @@ class DeepLinkLogger {
   _sub = appLinks.uriLinkStream.listen(
         (uri) {
           // ignore: avoid_print
-          print('[DeepLink] incoming: $uri');
+          developer.log('incoming: $uri', name: 'DeepLink');
         },
         onError: (e) {
           // ignore: avoid_print
-          print('[DeepLink] error: $e');
+          developer.log('error: $e', name: 'DeepLink', error: e);
         },
       );
     } catch (e) {
       // ignore: avoid_print
-      print('[DeepLink] init error: $e');
+  developer.log('init error: $e', name: 'DeepLink', error: e);
     }
   }
 
