@@ -333,6 +333,28 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Name input field
+                    _sectionTitle('What should I call you, Chef?'),
+                    const SizedBox(height: 12),
+                    TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        labelText: 'Name',
+                        hintText: 'Name',
+                      ),
+                      onChanged: (val) => setState(() => userName = val),
+                      controller: TextEditingController(text: userName),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Color(0xFFD7DBE0),
+                      ),
+                    ),
                     _sectionTitle('On most weeks, how many nights do you end up cooking at home?'),
                     DaysPerWeekSliderCard(
                       value: cookNightsCurrent,
