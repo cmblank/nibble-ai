@@ -13,7 +13,7 @@ class FilterDialog extends StatefulWidget {
 
 class _FilterDialogState extends State<FilterDialog> {
   late TextEditingController _searchController;
-  late FoodCategory? _selectedCategory;
+  late Set<FoodCategory> _selectedCategories;
   late StorageLocation? _selectedLocation;
   late SortCriteria _sortBy;
   late bool _sortAscending;
@@ -22,7 +22,9 @@ class _FilterDialogState extends State<FilterDialog> {
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.currentFilter.searchTerm);
-    _selectedCategory = widget.currentFilter.category;
+    _selectedCategories = widget.currentFilter.categories != null
+        ? Set<FoodCategory>.from(widget.currentFilter.categories!)
+        : <FoodCategory>{};
     _selectedLocation = widget.currentFilter.location;
     _sortBy = widget.currentFilter.sortBy;
     _sortAscending = widget.currentFilter.sortAscending;
@@ -57,25 +59,31 @@ class _FilterDialogState extends State<FilterDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<FoodCategory?>(
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
-              ),
-              value: _selectedCategory,
-              items: [
-                const DropdownMenuItem<FoodCategory?>(
-                  value: null,
-                  child: Text('All Categories'),
+            const Text('Categories', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilterChip(
+                  label: const Text('All'),
+                  selected: _selectedCategories.isEmpty,
+                  onSelected: (val) => setState(() => _selectedCategories.clear()),
                 ),
-                ...FoodCategory.values.map(
-                  (c) => DropdownMenuItem<FoodCategory?>(
-                    value: c,
-                    child: Text(c.display),
-                  ),
-                ),
+                ...FoodCategory.values.map((c) => FilterChip(
+                      label: Text(c.display),
+                      selected: _selectedCategories.contains(c),
+                      onSelected: (val) {
+                        setState(() {
+                          if (_selectedCategories.contains(c)) {
+                            _selectedCategories.remove(c);
+                          } else {
+                            _selectedCategories.add(c);
+                          }
+                        });
+                      },
+                    )),
               ],
-              onChanged: (value) => setState(() => _selectedCategory = value),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<StorageLocation?>(
@@ -143,7 +151,7 @@ class _FilterDialogState extends State<FilterDialog> {
                   onPressed: () {
                     final filter = PantryFilter(
                       searchTerm: _searchController.text.trim(),
-                      category: _selectedCategory,
+                      categories: _selectedCategories,
                       location: _selectedLocation,
                       sortBy: _sortBy,
                       sortAscending: _sortAscending,

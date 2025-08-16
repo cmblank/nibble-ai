@@ -37,7 +37,7 @@ class DaysPerWeekMeter extends StatelessWidget {
         final double targetX = value * stepSpan;
         final double fillWidth = value == 0 ? minFillAtZero : targetX.clamp(minFillAtZero, width);
 
-        void _handleLocal(Offset localPos) {
+        void handleLocal(Offset localPos) {
           final double x = localPos.dx.clamp(0.0, width);
           final int idx = (x / stepSpan).round().clamp(0, steps - 1);
           if (idx != value) onChanged(idx);
@@ -47,8 +47,8 @@ class DaysPerWeekMeter extends StatelessWidget {
 
   return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapDown: (d) => _handleLocal(d.localPosition),
-          onPanUpdate: (d) => _handleLocal(d.localPosition),
+          onTapDown: (d) => handleLocal(d.localPosition),
+          onPanUpdate: (d) => handleLocal(d.localPosition),
           child: SizedBox(
             height: 40, // enough for dots + labels + track
             child: Stack(

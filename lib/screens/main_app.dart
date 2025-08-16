@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'pantry_screen.dart';
-import 'cook_screen.dart';
-import 'chatbot_screen.dart';
-import 'profile_screen.dart';
+import 'dart:developer' as developer;
 import 'onboarding_screen.dart';
 import '../utils/profile_storage.dart';
+import '../services/supabase_service.dart';
+import '../widgets/nibble_tab_scaffold.dart';
 
 // Debug helper: set to false to allow entering the app after onboarding.
 const bool kForceOnboarding = false;
@@ -18,17 +16,8 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  int _selectedIndex = 0;
   bool _hasProfile = false;
   bool _isLoading = true;
-
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const PantryScreen(),
-    const CookScreen(),
-    const ChatbotScreen(),
-    const ProfileScreen(),
-  ];
 
   @override
   void initState() {
@@ -42,12 +31,30 @@ class _MainAppState extends State<MainApp> {
       _hasProfile = profile.isNotEmpty && profile['name'] != null;
       _isLoading = false;
     });
+
+    // Auto-sync local onboarding JSON to Supabase if cloud profile_data is missing
+    if (profile.isNotEmpty) {
+      // Run without blocking UI
+      _maybeSyncCloud(profile);
+    }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  Future<void> _maybeSyncCloud(Map<String, dynamic> localProfile) async {
+    try {
+      final userId = SupabaseService.currentUser?.id;
+      if (userId == null) return;
+      final cloud = await SupabaseService.getUserProfile(userId);
+      final hasCloudJson = (cloud != null && cloud['profile_data'] != null);
+      if (!hasCloudJson) {
+        final ok = await SupabaseService.upsertProfileJson(
+          userId: userId,
+          profileJson: localProfile,
+        );
+        developer.log('Auto-sync profile_data to Supabase: ${ok ? 'success' : 'failed'}', name: 'MainApp');
+      }
+    } catch (e) {
+      developer.log('Auto-sync error: $e', name: 'MainApp', error: e);
+    }
   }
 
   void _onOnboardingFinished() {
@@ -77,44 +84,6 @@ class _MainAppState extends State<MainApp> {
       return CookingProfileOnboarding(onFinish: _onOnboardingFinished);
     }
 
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: const Color(0xFF059669),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.kitchen_outlined),
-            activeIcon: Icon(Icons.kitchen),
-            label: 'Pantry',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_outlined),
-            activeIcon: Icon(Icons.restaurant),
-            label: 'Cook',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: 'Chef AI',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
+    return const NibbleTabScaffold();
   }
 }

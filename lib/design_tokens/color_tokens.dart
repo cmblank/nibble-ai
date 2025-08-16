@@ -22,6 +22,19 @@ class DesignTokens {
   static const Color creamWhisk = Color(0xFFF3E3B2);
   static const Color gardenHerb = Color(0xFF2A8270);
   static const Color flameOrange = Color(0xFFFD7804);
+  // Sage scale (for hover states in chips)
+  static const Color sage100 = Color(0xFFF7FDFB);
+  static const Color sage1000 = Color(0xFF319B7B);
+
+  // Brick scale (aliases/matches to brand reds used in spec)
+  // brick900 aligns with our primary brand red
+  static const Color brick900 = Color(0xFFE43707);
+  // brick1100 is a darker red used for hover/selected states in some components
+  static const Color brick1100 = Color(0xFF9E2605);
+  // brick1400 used for rest (unselected) labels/icons in tab bar
+  static const Color brick1400 = Color(0xFF4A0F02);
+  // brick1300 used for chip label in rest state per spec
+  static const Color brick1300 = Color(0xFF541403);
   
   // Semantic colors
   static const Color success = Color(0xFF10B981);
@@ -36,6 +49,7 @@ class TextColors {
   static const Color secondary = DesignTokens.gray600;
   static const Color tertiary = DesignTokens.gray500;
   static const Color inverse = DesignTokens.white;
+  static const Color dark = Color(0xFF1D2126);
   static const Color disabled = DesignTokens.gray400;
   static const Color success = DesignTokens.success;
   static const Color danger = DesignTokens.danger;

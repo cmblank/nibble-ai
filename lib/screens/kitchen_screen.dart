@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import '../widgets/nibble_app_bar.dart';
+import '../widgets/profile_sheet.dart';
+import 'achievements_screen.dart';
+import 'chatbot_screen.dart';
+import '../design_tokens/color_tokens.dart';
 
 class KitchenScreen extends StatefulWidget {
   const KitchenScreen({super.key});
@@ -11,6 +16,32 @@ class _KitchenScreenState extends State<KitchenScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: DesignTokens.gray300,
+      appBar: NibbleAppBar(
+        currentTab: NibbleTab.more,
+        showAchievements: true,
+        onWordmarkTap: () {
+          final controller = PrimaryScrollController.of(context);
+          if (controller.hasClients) {
+            controller.animateTo(
+              0,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          }
+        },
+        onChatTap: (ctx) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+          );
+        },
+        onAchievementsTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AchievementsScreen()),
+        ),
+        onProfileTap: () => showProfileSheet(context),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

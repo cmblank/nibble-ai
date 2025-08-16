@@ -10,6 +10,7 @@ import '../widgets/stepper_header.dart';
 import '../widgets/multi_select_pills.dart';
 import '../widgets/days_per_week_slider_card.dart';
 import '../widgets/toggle.dart';
+import '../services/pantry_service.dart';
 
 class CookingProfileOnboarding extends StatefulWidget {
   final VoidCallback onFinish;
@@ -28,6 +29,7 @@ class CookingProfileOnboarding extends StatefulWidget {
 class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
   int currentStep = 0;
   final ScrollController _scrollController = ScrollController();
+  late final TextEditingController _nameController;
 
   // Profile data
   String userName = '';
@@ -94,10 +96,10 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     'Vegetarian', 'Vegan', 'Pescatarian', 'Keto / Low-carb', 'Gluten-free', 'Dairy-free', 'Paleo', 'Whole30', 'High Protein', 'Low sugar',
   ];
   final List<String> commonAllergies = [
-    'Shellfish', 'Peanuts', 'Tree nuts', 'Soy', 'Eggs', 'Mushrooms', 'Cilantro', 'Other', 'Pork',
+  'None', 'Shellfish', 'Peanuts', 'Tree nuts', 'Soy', 'Eggs', 'Mushrooms', 'Cilantro', 'Other', 'Pork',
   ];
   final List<String> cuisineTypes = [
-    'Any', 'Italian', 'Mexican', 'Asian', 'Mediterranean', 'Indian', 'Middle Eastern', 'American', 'French', 'Latin American', 'African',
+  'Any', 'None', 'Italian', 'Mexican', 'Asian', 'Mediterranean', 'Indian', 'Middle Eastern', 'American', 'French', 'Latin American', 'African',
   ];
   final List<String> cookingTimes = [
     '15 minutes or less', '15-30 minutes', '30-60 minutes', 'Over 1 hour', 'I have all day!'
@@ -152,11 +154,14 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
     if (widget.initialData != null) {
       _loadInitialData();
     }
+  // Initialize controller after potential initial data load so text is correct
+  _nameController = TextEditingController(text: userName);
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+  _nameController.dispose();
     super.dispose();
   }
 
@@ -345,8 +350,9 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                         labelText: 'Name',
                         hintText: 'Name',
                       ),
+                      textDirection: TextDirection.ltr,
                       onChanged: (val) => setState(() => userName = val),
-                      controller: TextEditingController(text: userName),
+                      controller: _nameController,
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
@@ -636,8 +642,11 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                         setState(() {
                           if (cuisine == 'Any') {
                             selectedCuisines = selectedCuisines.contains('Any') ? [] : ['Any'];
+                          } else if (cuisine == 'None') {
+                            selectedCuisines = selectedCuisines.contains('None') ? [] : ['None'];
                           } else {
                             selectedCuisines.remove('Any');
+                            selectedCuisines.remove('None');
                             if (selectedCuisines.contains(cuisine)) {
                               selectedCuisines.remove(cuisine);
                             } else {
@@ -655,10 +664,15 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
                       selectedOptions: selectedAllergies,
                       onSelectionChanged: (allergy) {
                         setState(() {
-                          if (selectedAllergies.contains(allergy)) {
-                            selectedAllergies.remove(allergy);
+                          if (allergy == 'None') {
+                            selectedAllergies = selectedAllergies.contains('None') ? [] : ['None'];
                           } else {
-                            selectedAllergies.add(allergy);
+                            selectedAllergies.remove('None');
+                            if (selectedAllergies.contains(allergy)) {
+                              selectedAllergies.remove(allergy);
+                            } else {
+                              selectedAllergies.add(allergy);
+                            }
                           }
                         });
                       },
@@ -1197,6 +1211,9 @@ class _CookingProfileOnboardingState extends State<CookingProfileOnboarding> {
           userId: userId,
           profileJson: profileData,
         );
+  // Proactively merge onboarding pantry snapshot into user_pantry so items show up immediately.
+  // Safe to call multiple times; it dedupes by item_name.
+  await PantryService.importOnboardingPantryMerge();
       }
     } catch (e) {
   developer.log('Supabase sync failed: ${e.toString()}', name: 'Onboarding');

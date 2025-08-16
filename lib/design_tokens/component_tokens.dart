@@ -196,12 +196,17 @@ class ComponentTokens {
   /// Floating Action Button Style
   static FloatingActionButtonThemeData fabTheme() {
     return FloatingActionButtonThemeData(
-      backgroundColor: ButtonColors.brandPrimaryBackground,
-      foregroundColor: ButtonColors.brandPrimaryText,
+      // Colors per spec: rest = brick900, pressed = brick1100 (approx via overlays)
+      backgroundColor: DesignTokens.brick900,
+      foregroundColor: DesignTokens.white,
+      splashColor: DesignTokens.brick1100.withOpacity(0.24),
+      focusColor: DesignTokens.brick1100.withOpacity(0.12),
+      hoverColor: DesignTokens.brick1100.withOpacity(0.08),
       elevation: ElevationTokens.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(RadiusTokens.full),
-      ),
+      highlightElevation: ElevationTokens.floating + 2.0,
+      shape: const CircleBorder(),
+      // Size per spec: 48x48
+      sizeConstraints: const BoxConstraints.tightFor(width: 48, height: 48),
     );
   }
   

@@ -2,7 +2,8 @@ import 'dart:developer' as developer;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
-  static final SupabaseClient _client = Supabase.instance.client;
+  // Lazy getter to avoid static initialization before Supabase.initialize() in tests
+  static SupabaseClient get _client => Supabase.instance.client;
   
   // Getter for the Supabase client
   static SupabaseClient get client => _client;
@@ -225,12 +226,13 @@ class SupabaseService {
     required DateTime expiryDate,
   }) async {
     try {
+      final String expiryDateStr = expiryDate.toIso8601String().split('T').first;
       await _client
           .from('user_pantry')
           .insert({
         'user_id': userId,
         'item_name': itemName,
-        'expiry_date': expiryDate.toIso8601String(),
+        'expiry_date': expiryDateStr,
         'created_at': DateTime.now().toIso8601String(),
       });
       return true;

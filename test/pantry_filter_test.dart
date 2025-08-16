@@ -36,7 +36,7 @@ void main() {
     });
 
     test('category filter applies', () {
-      final filter = const PantryFilter(category: FoodCategory.snacks);
+      final filter = const PantryFilter(categories: {FoodCategory.snacks});
       final result = service.filterAndSort(items, filter);
       expect(result.length, 1);
       expect(result.first.name, 'Almonds');

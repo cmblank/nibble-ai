@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../utils/nibble_functions.dart';
+import '../design_tokens/color_tokens.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String title;
+  const ChatScreen({super.key, this.title = 'Chat'});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -107,13 +109,43 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chat'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
+      backgroundColor: DesignTokens.gray300,
       body: Column(
         children: [
+          // Minimal in-chat header
+          SafeArea(
+            bottom: false,
+            child: Container(
+              height: 56,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.black12, width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    tooltip: 'Back',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48), // spacer to balance leading IconButton
+                ],
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),

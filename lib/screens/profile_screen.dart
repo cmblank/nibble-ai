@@ -1,4 +1,4 @@
-import '../config/app_colors.dart';
+import '../design_tokens/color_tokens.dart';
 import 'package:flutter/material.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -6,7 +6,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.creamWhisk,
+      backgroundColor: DesignTokens.gray300,
       body: Center(
         child: Text(
           'Profile Screen',

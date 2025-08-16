@@ -3,17 +3,22 @@ import 'pantry_enums.dart';
 
 class PantryFilter {
   final String? searchTerm;
-  final FoodCategory? category;
+  final Set<FoodCategory>? categories;
   final StorageLocation? location;
   final SortCriteria sortBy;
   final bool sortAscending;
+  // Quick filters
+  final bool onlyLowStock; // when true, show only items marked low stock
+  final int? expiringWithinDays; // when set, show items expiring within N days from now
 
   const PantryFilter({
     this.searchTerm,
-    this.category,
+    this.categories,
     this.location,
     this.sortBy = SortCriteria.name,
     this.sortAscending = true,
+  this.onlyLowStock = false,
+  this.expiringWithinDays,
   });
 
   bool matches(PantryItem item) {
@@ -25,12 +30,24 @@ class PantryFilter {
       }
     }
 
-    if (category != null && item.category != category) {
-      return false;
-    }
+    final cats = categories;
+    if (cats != null && cats.isNotEmpty && !cats.contains(item.category)) return false;
 
     if (location != null && item.storageLocation != location) {
       return false;
+    }
+
+    if (onlyLowStock && item.isLowStock != true) {
+      return false;
+    }
+
+    final days = expiringWithinDays;
+    if (days != null) {
+      final now = DateTime.now();
+      final cutoff = now.add(Duration(days: days));
+      if (item.expirationDate.isAfter(cutoff)) {
+        return false;
+      }
     }
 
     return true;
@@ -38,17 +55,21 @@ class PantryFilter {
 
   PantryFilter copyWith({
     String? searchTerm,
-    FoodCategory? category,
+    Set<FoodCategory>? categories,
     StorageLocation? location,
     SortCriteria? sortBy,
     bool? sortAscending,
+    bool? onlyLowStock,
+    int? expiringWithinDays,
   }) {
     return PantryFilter(
       searchTerm: searchTerm ?? this.searchTerm,
-      category: category ?? this.category,
+      categories: categories ?? this.categories,
       location: location ?? this.location,
       sortBy: sortBy ?? this.sortBy,
       sortAscending: sortAscending ?? this.sortAscending,
+      onlyLowStock: onlyLowStock ?? this.onlyLowStock,
+      expiringWithinDays: expiringWithinDays ?? this.expiringWithinDays,
     );
   }
 }
@@ -56,16 +77,19 @@ class PantryFilter {
 enum SortCriteria {
   name,
   purchaseDate,
-  expiryDate;
+  expiryDate,
+  useFirst;
 
   String get displayName {
     switch (this) {
       case SortCriteria.name:
         return 'Name';
       case SortCriteria.purchaseDate:
-        return 'Purchase Date';
+        return 'Date Added';
       case SortCriteria.expiryDate:
-        return 'Expiry Date';
+        return 'Expiring Soon';
+      case SortCriteria.useFirst:
+        return 'Use First';
     }
   }
 }

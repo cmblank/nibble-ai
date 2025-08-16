@@ -5,6 +5,10 @@ import '../services/shopping_list_service.dart';
 import '../services/app_services.dart';
 import 'dialogs/shopping_list_item_dialog.dart';
 import '../widgets/nibble_app_bar.dart';
+import '../widgets/profile_sheet.dart';
+import 'achievements_screen.dart';
+import 'chatbot_screen.dart';
+import '../design_tokens/color_tokens.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   const ShoppingListScreen({super.key});
@@ -58,8 +62,30 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   @override
   Widget build(BuildContext context) {
   return Scaffold(
+      backgroundColor: DesignTokens.gray300,
       appBar: NibbleAppBar(
-        title: 'Shopping List',
+        currentTab: NibbleTab.more,
+        showAchievements: true,
+        onWordmarkTap: () {
+          final controller = PrimaryScrollController.of(context);
+          if (controller.hasClients) {
+            controller.animateTo(
+              0,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          }
+        },
+        onChatTap: (ctx) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+          );
+        },
+        onAchievementsTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AchievementsScreen()),
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -102,6 +128,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             ],
           ),
         ],
+        onProfileTap: () => showProfileSheet(context),
       ),
     body: _loading
       ? _buildShimmer()
@@ -141,9 +168,10 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'shopping-fab',
         onPressed: _addItem,
-        backgroundColor: AppColors.gardenHerb,
-        child: const Icon(Icons.add),
+  tooltip: 'Add list item',
+  child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

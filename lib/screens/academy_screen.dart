@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/app_colors.dart';
+import '../design_tokens/color_tokens.dart';
+import '../widgets/nibble_app_bar.dart';
 
 class AcademyScreen extends StatelessWidget {
   const AcademyScreen({super.key});
@@ -7,22 +9,39 @@ class AcademyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              floating: true,
-              title: const Text(
-                'Cooking Academy',
-                style: TextStyle(
-                  color: Color(0xFF1F2937),
-                  fontWeight: FontWeight.bold,
-                ),
+      appBar: const NibbleAppBar(
+        currentTab: NibbleTab.more,
+      ),
+      backgroundColor: DesignTokens.gray100,
+      body: CustomScrollView(
+        slivers: [
+          // Page header under the app bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Nibble Academy',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    'Learn core skills, tips, and techniques to cook with confidence.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -35,7 +54,7 @@ class AcademyScreen extends StatelessWidget {
                       'Essential Skills',
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF1F2937),
                       ),
                     ),
@@ -65,8 +84,7 @@ class AcademyScreen extends StatelessWidget {
             const SliverToBoxAdapter(
               child: SizedBox(height: 24),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
