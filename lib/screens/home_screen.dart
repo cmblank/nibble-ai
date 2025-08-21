@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../config/app_colors.dart';
 import '../design_tokens/color_tokens.dart';
+import '../design_tokens/typography_tokens.dart';
+import '../design_tokens/spacing_tokens.dart';
+import '../design_tokens/component_tokens.dart';
 import '../widgets/nibble_app_bar.dart';
 import 'achievements_screen.dart';
 import 'chatbot_screen.dart';
@@ -12,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: DesignTokens.gray300,
+      backgroundColor: DesignTokens.gray100,
       body: NestedScrollView(
         headerSliverBuilder: (context, inner) => [
           NibbleSliverAppBar(
@@ -31,38 +33,34 @@ class HomeScreen extends StatelessWidget {
         ],
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(SpacingTokens.spaceLG),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
+                const SizedBox(height: SpacingTokens.spaceSM),
                 
-                // Chef greeting card
-                _buildChefGreetingCard(),
-                const SizedBox(height: 24),
+                // Welcome Banner
+                _buildWelcomeBanner(),
+                const SizedBox(height: SpacingTokens.spaceXL),
                 
-                // Daily Check-In
-                _buildDailyCheckInCard(context),
-                const SizedBox(height: 24),
+                // Tonight Section
+                _buildTonightSection(),
+                const SizedBox(height: SpacingTokens.spaceLG),
                 
-                // Cooking journey stats
-                _buildCookingJourneyCard(),
-                const SizedBox(height: 16),
+                // Weekly Recipe Review
+                _buildWeeklyRecipeReview(),
+                const SizedBox(height: SpacingTokens.spaceXL),
                 
-                // Achievements preview
-                _buildAchievementsPreviewCard(context),
-                const SizedBox(height: 16),
+                // Upcoming Meals
+                _buildUpcomingMealsSection(),
+                const SizedBox(height: SpacingTokens.spaceXL),
                 
-                // Quick actions
-                _buildQuickActions(context),
-                const SizedBox(height: 24),
+                // Cooking Journey
+                _buildCookingJourneySection(),
+                const SizedBox(height: SpacingTokens.spaceXL),
                 
-                // Your Pantry section
-                _buildPantrySection(),
-                const SizedBox(height: 24),
-                
-                // Suggested recipes
-                _buildSuggestedSection(),
+                // Pantry Status
+                _buildPantryStatusSection(),
                 const SizedBox(height: 100), // Extra space for bottom nav
               ],
             ),
@@ -72,81 +70,403 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  
-
-  Widget _buildChefGreetingCard() {
+  Widget _buildWelcomeBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(SpacingTokens.spaceXL),
       decoration: BoxDecoration(
-        color: AppColors.creamWhisk,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.green,
+        borderRadius: BorderRadius.circular(RadiusTokens.xl),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Welcome, Courtney',
+            style: TextStyles.heading200.copyWith(
+              color: Colors.white,
+              fontWeight: TypographyTokens.bold,
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.spaceXS),
+          Text(
+            'Let\'s cook something delicious.',
+            style: TextStyles.body100.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.spaceLG),
+          Row(
+            children: [
+              Expanded(
+                child: _buildWelcomeButton(
+                  'Plan Week',
+                  Icons.calendar_today,
+                  () {},
+                ),
+              ),
+              const SizedBox(width: SpacingTokens.spaceMD),
+              Expanded(
+                child: _buildWelcomeButton(
+                  'Add Pantry Item',
+                  Icons.check,
+                  () {},
+                ),
+              ),
+              const SizedBox(width: SpacingTokens.spaceMD),
+              Expanded(
+                child: _buildWelcomeButton(
+                  'Grocery List',
+                  Icons.shopping_cart,
+                  () {},
+                  badge: '24',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeButton(String text, IconData icon, VoidCallback onTap, {String? badge}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: SpacingTokens.spaceMD,
+          horizontal: SpacingTokens.spaceSM,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(RadiusTokens.lg),
+        ),
+        child: Stack(
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(height: SpacingTokens.spaceXS),
+                Text(
+                  text,
+                  style: TextStyles.body75.copyWith(
+                    color: Colors.white,
+                    fontWeight: TypographyTokens.medium,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            if (badge != null)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: SpacingTokens.spaceXS,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(RadiusTokens.full),
+                  ),
+                                      child: Text(
+                      badge,
+                      style: TextStyles.body75.copyWith(
+                        color: Colors.white,
+                        fontWeight: TypographyTokens.bold,
+                      ),
+                    ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTonightSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Tonight',
+              style: TextStyles.heading150.copyWith(
+                fontWeight: TypographyTokens.bold,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () {},
+              child: Text(
+                'Edit Plan →',
+                style: TextStyles.body85.copyWith(
+                  color: DesignTokens.brick900,
+                  fontWeight: TypographyTokens.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.spaceMD),
+        _buildTonightRecipeCard(),
+      ],
+    );
+  }
+
+  Widget _buildTonightRecipeCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(RadiusTokens.xl),
         boxShadow: [
           BoxShadow(
-            color: AppColors.deepRoast.withAlpha((255 * 0.05).round()),
-            blurRadius: 10,
+            color: DesignTokens.gray400.withValues(alpha: 0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Recipe Image
           Container(
-            width: 50,
-            height: 50,
+            height: 200,
             decoration: BoxDecoration(
-              color: AppColors.goldenCrust,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: const Center(
-              child: Text('👨‍🍳', style: TextStyle(fontSize: 24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(RadiusTokens.xl),
+              ),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/meal-salad.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.all(SpacingTokens.spaceLG),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Good evening, Chef!',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ).copyWith(color: AppColors.deepRoast),
+                  'Creamy Lemon Orzo',
+                  style: TextStyles.heading125.copyWith(
+                    fontWeight: TypographyTokens.bold,
+                  ),
                 ),
-                Text(
-                  'Ready to create something delicious?',
-                  style: const TextStyle(
-                    fontSize: 14,
-                  ).copyWith(color: AppColors.gardenHerb),
+                const SizedBox(height: SpacingTokens.spaceSM),
+                Row(
+                  children: [
+                    _buildRecipeDetail(Icons.people, '4'),
+                    const SizedBox(width: SpacingTokens.spaceLG),
+                    _buildRecipeDetail(Icons.access_time, '15m'),
+                  ],
+                ),
+                const SizedBox(height: SpacingTokens.spaceMD),
+                Row(
+                  children: [
+                    _buildRecipeTag('Quick'),
+                    const SizedBox(width: SpacingTokens.spaceSM),
+                    _buildRecipeTag('Medium'),
+                  ],
+                ),
+                const SizedBox(height: SpacingTokens.spaceLG),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ComponentTokens.secondaryButton(
+                          backgroundColor: Colors.orange.shade100,
+                          foregroundColor: Colors.orange.shade800,
+                        ),
+                        child: const Text('Swap'),
+                      ),
+                    ),
+                    const SizedBox(width: SpacingTokens.spaceMD),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ComponentTokens.primaryButton(
+                          backgroundColor: DesignTokens.brick900,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Cook Now'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.flameOrange,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCookingJourneyCard() {
+  Widget _buildRecipeDetail(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: DesignTokens.gray600,
+        ),
+        const SizedBox(width: SpacingTokens.spaceXS),
+        Text(
+          text,
+          style: TextStyles.body85.copyWith(
+            color: DesignTokens.gray600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecipeTag(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.spaceSM,
+        vertical: SpacingTokens.spaceXS,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        border: Border.all(color: Colors.green.shade200),
+        borderRadius: BorderRadius.circular(RadiusTokens.full),
+      ),
+      child: Text(
+        text,
+        style: TextStyles.body75.copyWith(
+          color: Colors.green.shade700,
+          fontWeight: TypographyTokens.medium,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyRecipeReview() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.spaceLG,
+        vertical: SpacingTokens.spaceMD,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(RadiusTokens.full),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius: BorderRadius.circular(RadiusTokens.full),
+            ),
+            child: const Center(
+              child: Text(
+                '👨‍🍳',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ),
+          const SizedBox(width: SpacingTokens.spaceMD),
+          Expanded(
+            child: Text(
+              'Weekly Recipe Review',
+              style: TextStyles.body100.copyWith(
+                fontWeight: TypographyTokens.medium,
+              ),
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: Colors.green,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpcomingMealsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Upcoming Meals',
+              style: TextStyles.heading150.copyWith(
+                fontWeight: TypographyTokens.bold,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () {},
+              child: Text(
+                'Edit Plan →',
+                style: TextStyles.body85.copyWith(
+                  color: DesignTokens.brick900,
+                  fontWeight: TypographyTokens.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.spaceMD),
+        SizedBox(
+          height: 280,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildUpcomingMealCard(
+                'Creamy Mushroom Risotto',
+                'assets/images/meal-spagetti.png',
+                '4',
+                '30m',
+                hasRefreshIcon: true,
+              ),
+              const SizedBox(width: SpacingTokens.spaceMD),
+              _buildUpcomingMealCard(
+                'Sausage & Peppers',
+                'assets/images/meal-taco-2.png',
+                '4',
+                '30m',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUpcomingMealCard(
+    String title,
+    String imagePath,
+    String servings,
+    String time, {
+    bool hasRefreshIcon = false,
+  }) {
+    return Container(
+      width: 200,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(RadiusTokens.lg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            color: DesignTokens.gray400.withValues(alpha: 0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -154,81 +474,67 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Stack(
             children: [
-              const Text(
-                '🏆',
-                style: TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Your Cooking Journey',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(RadiusTokens.lg),
+                  ),
+                  image: DecorationImage(
+                    image: AssetImage(imagePath),
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-              Text(
-                'See all →',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: const Color(0xFF059669),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'You\'re doing amazing!',
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('🔥', 'Streak', '5 days', 'Keep it up! 🎉', Colors.orange),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard('📖', 'Recipes', '12', 'This month', const Color(0xFF8B5CF6)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Text('🎉', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'Achievement Unlocked!',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF92400E),
+              if (hasRefreshIcon)
+                Positioned(
+                  top: SpacingTokens.spaceSM,
+                  right: SpacingTokens.spaceSM,
+                  child: Container(
+                    padding: const EdgeInsets.all(SpacingTokens.spaceXS),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(RadiusTokens.full),
+                    ),
+                    child: const Icon(
+                      Icons.refresh,
+                      size: 16,
+                      color: Colors.green,
                     ),
                   ),
                 ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(SpacingTokens.spaceMD),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  'See all →',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: const Color(0xFF92400E),
-                    fontWeight: FontWeight.w500,
+                  title,
+                  style: TextStyles.body100.copyWith(
+                    fontWeight: TypographyTokens.semibold,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: SpacingTokens.spaceSM),
+                Row(
+                  children: [
+                    _buildRecipeDetail(Icons.people, servings),
+                    const SizedBox(width: SpacingTokens.spaceLG),
+                    _buildRecipeDetail(Icons.access_time, time),
+                  ],
+                ),
+                const SizedBox(height: SpacingTokens.spaceSM),
+                Row(
+                  children: [
+                    _buildRecipeTag('Quick'),
+                    const SizedBox(width: SpacingTokens.spaceSM),
+                    _buildRecipeTag('Medium'),
+                  ],
                 ),
               ],
             ),
@@ -238,44 +544,105 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String emoji, String label, String value, String subtitle, Color accentColor) {
+  Widget _buildCookingJourneySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Your Cooking Journey',
+              style: TextStyles.heading150.copyWith(
+                fontWeight: TypographyTokens.bold,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () {},
+              child: Text(
+                'See all →',
+                style: TextStyles.body85.copyWith(
+                  color: DesignTokens.brick900,
+                  fontWeight: TypographyTokens.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.spaceMD),
+        Row(
+          children: [
+            Expanded(
+              child: _buildJourneyCard(
+                Icons.local_fire_department,
+                'Streak',
+                '4 days',
+                'This Week',
+                Colors.orange,
+              ),
+            ),
+            const SizedBox(width: SpacingTokens.spaceMD),
+            Expanded(
+              child: _buildJourneyCard(
+                Icons.bookmark,
+                'Recipes',
+                '12 cooked',
+                'This Month',
+                Colors.green,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildJourneyCard(
+    IconData icon,
+    String title,
+    String value,
+    String subtitle,
+    Color color,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(SpacingTokens.spaceLG),
       decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(RadiusTokens.lg),
+        boxShadow: [
+          BoxShadow(
+            color: DesignTokens.gray400.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: accentColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Icon(
+            icon,
+            color: color,
+            size: 24,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: SpacingTokens.spaceSM),
+          Text(
+            title,
+            style: TextStyles.body85.copyWith(
+              fontWeight: TypographyTokens.medium,
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.spaceXS),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1F2937),
+            style: TextStyles.heading125.copyWith(
+              fontWeight: TypographyTokens.bold,
             ),
           ),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Color(0xFF6B7280),
+            style: TextStyles.body75.copyWith(
+              color: DesignTokens.gray600,
             ),
           ),
         ],
@@ -283,207 +650,58 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAchievementsPreviewCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AchievementsScreen()),
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
+  Widget _buildPantryStatusSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: const Center(
-                child: Text('🏆', style: TextStyle(fontSize: 24)),
+            Text(
+              'Pantry Status',
+              style: TextStyles.heading150.copyWith(
+                fontWeight: TypographyTokens.bold,
               ),
             ),
-            const SizedBox(width: 16),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Your Achievements',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'You\'re on fire! 3 completed this week 🔥',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'View All',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+            const Spacer(),
+            GestureDetector(
+              onTap: () {},
+              child: Text(
+                'See all →',
+                style: TextStyles.body85.copyWith(
+                  color: DesignTokens.brick900,
+                  fontWeight: TypographyTokens.medium,
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDailyCheckInCard(BuildContext context) {
-    return GestureDetector(
-    onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-      builder: (context) => const ChatbotScreen(),
-        ),
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF8B5CF6), Color(0xFFA855F7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF8B5CF6).withAlpha((255 * 0.3).round()),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha((255 * 0.2).round()),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: const Center(
-                child: Text('🧠', style: TextStyle(fontSize: 24)),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Daily Check-In',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'How are you feeling about cooking today?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withAlpha((255 * 0.9).round()),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha((255 * 0.2).round()),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      children: [
+        const SizedBox(height: SpacingTokens.spaceMD),
         Row(
           children: [
             Expanded(
-              child: _buildActionButton(
-                context,
-                '�', 
-                'Low Energy Help', 
-                const Color(0xFFF59E0B),
+              child: _buildPantryStatusCard(
+                Icons.warning,
+                'Low Stock',
+                '5 Items',
+                Colors.orange,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: SpacingTokens.spaceMD),
             Expanded(
-              child: _buildActionButton(
-                context,
-                '🥕', 
-                'Pantry Help', 
-                const Color(0xFF10B981),
+              child: _buildPantryStatusCard(
+                Icons.access_time,
+                'Expiring Soon',
+                '5 Items',
+                Colors.red,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
+            const SizedBox(width: SpacingTokens.spaceMD),
             Expanded(
-              child: _buildActionButton(
-                context,
-                '📅', 
-                'Meal Planning', 
-                const Color(0xFF3B82F6),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                context,
-                '💬', 
-                'Ask Nibble', 
-                const Color(0xFF8B5CF6),
+              child: _buildPantryStatusCard(
+                Icons.shopping_cart,
+                'Shopping List',
+                '5 Items',
+                Colors.green,
               ),
             ),
           ],
@@ -492,324 +710,49 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(
-    BuildContext context,
-    String emoji, 
-    String text, 
+  Widget _buildPantryStatusCard(
+    IconData icon,
+    String title,
+    String value,
     Color color,
   ) {
-    return GestureDetector(
-    onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-      builder: (context) => const ChatbotScreen(),
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPantrySection() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(SpacingTokens.spaceMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(RadiusTokens.lg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            color: DesignTokens.gray400.withValues(alpha: 0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text('🥬', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Your Pantry',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-              ),
-              Text(
-                'Check pantry →',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: const Color(0xFF059669),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Icon(
+            icon,
+            color: color,
+            size: 20,
           ),
-          const SizedBox(height: 4),
-          const Text(
-            'Fresh items expiring soon',
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildPantryItem('🫑', 'Bell peppers', '2 days left', Colors.orange),
-          const SizedBox(height: 8),
-          _buildPantryItem('🍗', 'Chicken breast', '3 days left', Colors.green),
-          const SizedBox(height: 8),
-          _buildPantryItem('🍚', 'Rice, garlic, pasta', 'Pantry staples', Colors.grey),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPantryItem(String emoji, String name, String status, Color statusColor) {
-    return Row(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            name,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-        ),
-        Text(
-          status,
-          style: TextStyle(
-            fontSize: 12,
-            color: statusColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSuggestedSection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Text('🎯', style: TextStyle(fontSize: 12)),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Suggested for You',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Based on your pantry items',
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildRecipeCard('🍄', 'Mushroom Risotto', '25 mins', 'Medium', '-2 items', Colors.red),
-          const SizedBox(height: 12),
-          _buildRecipeCard('🍝', 'Garlic Pasta', '15 mins', 'Easy', 'Ready!', Colors.green),
-          const SizedBox(height: 12),
-          _buildRecipeCard('🍗', 'Chicken Stir Fry', '20 mins', 'Easy', '+1 item', Colors.orange),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecipeCard(String emoji, String name, String time, String difficulty, String status, Color statusColor) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 20)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                Text(
-                  '$time • $difficulty',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: SpacingTokens.spaceSM),
           Text(
-            status,
-            style: TextStyle(
-              fontSize: 11,
-              color: statusColor,
-              fontWeight: FontWeight.w600,
+            title,
+            style: TextStyles.body75.copyWith(
+              fontWeight: TypographyTokens.medium,
             ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: SpacingTokens.spaceXS),
+          Text(
+            value,
+            style: TextStyles.body85.copyWith(
+              fontWeight: TypographyTokens.bold,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
-      ),
-    );
-  }
-
-  
-
-  
-}
-
-class ProfileMenuItem extends StatelessWidget {
-  final String icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback? onTap;
-
-  const ProfileMenuItem({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text(icon, style: const TextStyle(fontSize: 20)),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
-        ),
       ),
     );
   }
