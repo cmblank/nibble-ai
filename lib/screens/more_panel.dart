@@ -15,10 +15,12 @@ class MorePanel extends StatelessWidget {
   const MorePanel({super.key, required this.rootContext});
 
   void _navigateAfterClose(Widget page) {
-    Navigator.of(rootContext).pop();
-    Future.microtask(() => Navigator.of(rootContext).push(
-          MaterialPageRoute(builder: (_) => page),
-        ));
+    // Capture navigator synchronously, then close sheet and navigate next microtask
+    final nav = Navigator.of(rootContext);
+    nav.pop();
+    Future.microtask(() {
+      nav.push(MaterialPageRoute(builder: (_) => page));
+    });
   }
 
   @override
@@ -65,8 +67,10 @@ class MorePanel extends StatelessWidget {
               title: 'Settings',
               subtitle: 'App preferences and notifications',
               onTap: () {
-                Navigator.of(rootContext).pop();
-                Future.microtask(() => showProfileSheet(rootContext));
+                final nav = Navigator.of(rootContext);
+                nav.pop();
+                // ignore: use_build_context_synchronously
+                Future.microtask(() => showProfileSheet(nav.context));
               },
             ),
             _card(
@@ -82,6 +86,9 @@ class MorePanel extends StatelessWidget {
               title: 'Reset App',
               subtitle: 'Clear profile and restart onboarding',
               onTap: () async {
+                final nav = Navigator.of(rootContext);
+                final messenger = ScaffoldMessenger.of(rootContext);
+                // ignore: use_build_context_synchronously
                 final ok = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
@@ -102,19 +109,21 @@ class MorePanel extends StatelessWidget {
                     false;
                 if (!ok) return;
                 await ProfileStorage.clearProfile();
-                Navigator.of(rootContext).pop();
-                Future.microtask(() => Navigator.of(rootContext).push(
-                      MaterialPageRoute(
-                        builder: (_) => CookingProfileOnboarding(
-                          onFinish: () {
-                            Navigator.of(rootContext).popUntil((r) => r.isFirst);
-                            ScaffoldMessenger.of(rootContext).showSnackBar(
-                              const SnackBar(content: Text('Onboarding completed!')),
-                            );
-                          },
-                        ),
+                nav.pop();
+                Future.microtask(() {
+                  nav.push(
+                    MaterialPageRoute(
+                      builder: (_) => CookingProfileOnboarding(
+                        onFinish: () {
+                          nav.popUntil((r) => r.isFirst);
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Onboarding completed!')),
+                          );
+                        },
                       ),
-                    ));
+                    ),
+                  );
+                });
               },
             ),
             _card(
@@ -122,16 +131,21 @@ class MorePanel extends StatelessWidget {
               icon: const Icon(Icons.play_circle_outline, color: DesignTokens.brick900),
               title: 'Test Onboarding',
               subtitle: 'Preview the welcome flow',
-              onTap: () => _navigateAfterClose(
-                CookingProfileOnboarding(
-                  onFinish: () {
-                    Navigator.of(rootContext).popUntil((r) => r.isFirst);
-                    ScaffoldMessenger.of(rootContext).showSnackBar(
-                      const SnackBar(content: Text('Onboarding completed!')),
-                    );
-                  },
-                ),
-              ),
+              onTap: () {
+                final nav = Navigator.of(rootContext);
+                final messenger = ScaffoldMessenger.of(rootContext);
+                final messengerState = messenger;
+                _navigateAfterClose(
+                  CookingProfileOnboarding(
+                    onFinish: () {
+                      nav.popUntil((r) => r.isFirst);
+                      messengerState.showSnackBar(
+                        const SnackBar(content: Text('Onboarding completed!')),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
             _card(
               context,

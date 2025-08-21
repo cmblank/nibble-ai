@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import '../models/shopping_list_item.dart';
 import 'supabase_service.dart';
 
@@ -63,7 +64,7 @@ class ShoppingListService {
       
       return ShoppingListItem.fromJson(Map<String, dynamic>.from(inserted));
     } catch (e) {
-      print('Error adding item to shopping list: $e');
+      debugPrint('Error adding item to shopping list: $e');
       return null;
     }
   }

@@ -90,7 +90,7 @@ class _NibbleTabScaffoldState extends State<NibbleTabScaffold> {
     final atRoot = nav == null ? true : !nav.canPop();
     return PopScope(
       canPop: _current == NibbleTab.home && atRoot,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         final navState = _navKeys[_current]!.currentState!;
         if (navState.canPop()) {

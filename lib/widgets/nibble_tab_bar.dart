@@ -90,8 +90,8 @@ class NibbleTabBar extends StatelessWidget {
               label: 'Recipes',
             ),
             NavigationDestination(
-              icon: assetIcon('assets/images/icon-note-book.png', selected: false, badgeCount: pantryBadgeCount),
-              selectedIcon: assetIcon('assets/images/icon-note-book.png', selected: true, badgeCount: pantryBadgeCount),
+              icon: assetIcon('assets/images/icon-pantry.png', selected: false, badgeCount: pantryBadgeCount),
+              selectedIcon: assetIcon('assets/images/icon-pantry.png', selected: true, badgeCount: pantryBadgeCount),
               label: 'Pantry',
             ),
             NavigationDestination(

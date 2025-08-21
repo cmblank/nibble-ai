@@ -31,7 +31,7 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
-      final messenger = ScaffoldMessenger.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
       if (_isSignUp) {
         final response = await SupabaseService.signUp(
@@ -40,7 +40,7 @@ class _AuthScreenState extends State<AuthScreen> {
         );
         
         if (response.user != null) {
-          messenger.showSnackBar(
+      messenger.showSnackBar(
             SnackBar(
               content: Text('Welcome to the kitchen! 🎉 Please check your email to verify your account.'),
               backgroundColor: AppColors.success,
@@ -58,8 +58,9 @@ class _AuthScreenState extends State<AuthScreen> {
         }
       }
     } catch (e) {
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.showSnackBar(
+  if (!mounted) return;
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
           backgroundColor: Colors.red,
@@ -78,16 +79,16 @@ class _AuthScreenState extends State<AuthScreen> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
-      final messenger = ScaffoldMessenger.of(context);
       final ok = await _supabaseService.signInWithGoogle();
       if (!ok) {
-        messenger.showSnackBar(
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Google sign-in was cancelled or failed.')),
         );
       }
     } catch (e) {
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.showSnackBar(
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Google sign-in error: $e')),
       );
     } finally {
@@ -208,20 +209,19 @@ class _AuthScreenState extends State<AuthScreen> {
                             ? null
                             : () async {
                                 final email = _emailController.text.trim();
+                                final messenger = ScaffoldMessenger.of(context);
                                 if (email.isEmpty) {
-                                  final messenger = ScaffoldMessenger.of(context);
                                   messenger.showSnackBar(const SnackBar(content: Text('Enter your email to reset your password.')));
                                   return;
                                 }
                                 setState(() => _isLoading = true);
                                 try {
-                                  final messenger = ScaffoldMessenger.of(context);
                                   await SupabaseService.resetPasswordForEmail(email: email);
+                                  // Using messenger captured before await
                                   messenger.showSnackBar(
                                     const SnackBar(content: Text('Password reset email sent. Check your inbox.')),
                                   );
                                 } catch (e) {
-                                  final messenger = ScaffoldMessenger.of(context);
                                   messenger.showSnackBar(
                                     SnackBar(content: Text('Reset error: $e')),
                                   );

@@ -7,6 +7,9 @@ import '../widgets/nibble_app_bar.dart';
 import 'achievements_screen.dart';
 import 'chatbot_screen.dart';
 import '../widgets/profile_sheet.dart';
+import 'shopping_list_screen.dart';
+import 'meal_planner_screen.dart';
+import 'pantry_screen_clean.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -32,104 +35,128 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
         body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(SpacingTokens.spaceLG),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: SpacingTokens.spaceSM),
-                
-                // Welcome Banner
-                _buildWelcomeBanner(),
-                const SizedBox(height: SpacingTokens.spaceXL),
-                
-                // Tonight Section
-                _buildTonightSection(),
-                const SizedBox(height: SpacingTokens.spaceLG),
-                
-                // Weekly Recipe Review
-                _buildWeeklyRecipeReview(),
-                const SizedBox(height: SpacingTokens.spaceXL),
-                
-                // Upcoming Meals
-                _buildUpcomingMealsSection(),
-                const SizedBox(height: SpacingTokens.spaceXL),
-                
-                // Cooking Journey
-                _buildCookingJourneySection(),
-                const SizedBox(height: SpacingTokens.spaceXL),
-                
-                // Pantry Status
-                _buildPantryStatusSection(),
-                const SizedBox(height: 100), // Extra space for bottom nav
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Full-width header with no top padding
+              _buildWelcomeBanner(context),
+              const SizedBox(height: SpacingTokens.spaceXL),
+              // Main content padded
+              Padding(
+                padding: const EdgeInsets.all(SpacingTokens.spaceLG),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tonight Section
+                    _buildTonightSection(),
+                    const SizedBox(height: SpacingTokens.spaceLG),
+                    // Spacer before upcoming meals
+                    const SizedBox(height: SpacingTokens.spaceXL),
+                    // Upcoming Meals
+                    _buildUpcomingMealsSection(),
+                    const SizedBox(height: SpacingTokens.spaceXL),
+                    // Cooking Journey
+                    _buildCookingJourneySection(),
+                    const SizedBox(height: SpacingTokens.spaceXL),
+                    // Pantry Status
+                    _buildPantryStatusSection(),
+                    const SizedBox(height: 100), // Extra space for bottom nav
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildWelcomeBanner() {
+  Widget _buildWelcomeBanner(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(SpacingTokens.spaceMD), // 16px padding
-      decoration: BoxDecoration(
-        color: const Color(0xFF319B7B), // sage/1000 color from design tokens
-        borderRadius: BorderRadius.circular(RadiusTokens.xl),
+      decoration: const BoxDecoration(
+        color: DesignTokens.sage1000, // sage/1000 token
+        // Make header flush with app bar: no rounded corners
+        borderRadius: BorderRadius.zero,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // Center alignment
+  crossAxisAlignment: CrossAxisAlignment.center, // Center alignment
         children: [
-          // Text section with 2px spacing between lines
+          // Text section with 4px spacing between lines
           Column(
             children: [
               Text(
                 'Welcome, Courtney',
                 style: TextStyles.heading200.copyWith(
                   color: Colors.white,
-                  fontWeight: TypographyTokens.bold,
+      // Reduce to semi-bold per design tweak
+      fontWeight: TypographyTokens.semibold,
+                  fontFamily: 'Manrope',
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 2), // 2px spacing between text lines
+              const SizedBox(height: 4), // 4px spacing between text lines
               Text(
                 'Let\'s cook something delicious.',
-                style: TextStyles.body85.copyWith(
+                style: TextStyles.body100.copyWith(
                   color: Colors.white,
                   fontWeight: TypographyTokens.medium,
-                  fontSize: 14,
+                  fontSize: 16,
                   height: 20 / 14, // line height 20px
+                  fontFamily: 'Manrope',
                 ),
                 textAlign: TextAlign.center,
               ),
             ],
           ),
           const SizedBox(height: 28), // 28px spacing between text and buttons
-          Row(
+    Row(
             children: [
               Expanded(
                 child: _buildWelcomeButton(
                   'Plan Week',
-                  Icons.calendar_today,
-                  () {},
+      Icons.calendar_today,
+      () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MealPlannerScreen()),
+        );
+      },
+      assetName: 'assets/images/icon-calendar-date.png',
                 ),
               ),
               const SizedBox(width: SpacingTokens.spaceSM), // 8px gap between buttons
               Expanded(
                 child: _buildWelcomeButton(
                   'Add Pantry Item',
-                  Icons.check,
-                  () {},
+      Icons.check,
+      () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PantryScreen()),
+        );
+      },
+      assetName: 'assets/images/icon-approve-circle.png',
                 ),
               ),
               const SizedBox(width: SpacingTokens.spaceSM), // 8px gap between buttons
               Expanded(
                 child: _buildWelcomeButton(
                   'Grocery List',
-                  Icons.shopping_cart,
-                  () {},
+      Icons.shopping_cart,
+      () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ShoppingListScreen()),
+        );
+      },
+      assetName: 'assets/images/icon-cart.png',
                   badge: '24',
+                  // Move badge up and right; set orange/1000 tone
+                  badgeColor: DesignTokens.flameOrange,
+                  badgeTop: -6,
+                  badgeRight: -6,
                 ),
               ),
             ],
@@ -139,7 +166,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-    Widget _buildWelcomeButton(String text, IconData icon, VoidCallback onTap, {String? badge}) {
+  Widget _buildWelcomeButton(String text, IconData icon, VoidCallback onTap, {String? badge, String? assetName, Color? badgeColor, double? badgeTop, double? badgeRight}) {
+    var body75 = TextStyles.body75;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -160,46 +188,58 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  color: DesignTokens.gray600, // Dark gray icon
-                  size: 20,
-                ),
-                const SizedBox(height: SpacingTokens.spaceXS),
-                Text(
-                  text,
-                  style: TextStyles.body75.copyWith(
-                    color: DesignTokens.gray600, // Medium gray text
-                    fontWeight: TypographyTokens.semibold,
-                    fontSize: 10,
+            Align(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (assetName != null)
+                    Image.asset(
+                      assetName,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.contain,
+                    )
+                  else
+                    Icon(
+                      icon,
+                      color: DesignTokens.gray600, // Dark gray icon
+                      size: 24,
+                    ),
+                  const SizedBox(height: SpacingTokens.spaceXS),
+                  Text(
+                    text,
+                    style: TextStyles.body75.copyWith(
+                      color: const Color.fromARGB(255, 41, 44, 47), // color/text/medium token
+                      fontWeight: TypographyTokens.semibold,
+                      fontSize: 12,
+                      fontFamily: 'Manrope',
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                ],
+              ),
             ),
             if (badge != null)
               Positioned(
-                top: -4,
-                right: -4,
+                top: badgeTop ?? 8,
+                right: badgeRight ?? 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: DesignTokens.brick900, // Use brand red for badge
+                    color: badgeColor ?? DesignTokens.brick900,
                     borderRadius: BorderRadius.circular(RadiusTokens.full),
                   ),
                   child: Text(
                     badge,
-                    style: TextStyles.body75.copyWith(
+                    style: body75.copyWith(
                       color: Colors.white,
                       fontWeight: TypographyTokens.semibold,
-                      fontSize: 8,
+                      fontSize: 10,
                     ),
                   ),
                 ),
@@ -373,51 +413,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklyRecipeReview() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.spaceLG,
-        vertical: SpacingTokens.spaceMD,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(RadiusTokens.full),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Colors.orange,
-              borderRadius: BorderRadius.circular(RadiusTokens.full),
-            ),
-            child: const Center(
-              child: Text(
-                '👨‍🍳',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ),
-          const SizedBox(width: SpacingTokens.spaceMD),
-          Expanded(
-            child: Text(
-              'Weekly Recipe Review',
-              style: TextStyles.body100.copyWith(
-                fontWeight: TypographyTokens.medium,
-              ),
-            ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: Colors.green,
-          ),
-        ],
-      ),
-    );
-  }
+  // ignore: unused_element
 
   Widget _buildUpcomingMealsSection() {
     return Column(

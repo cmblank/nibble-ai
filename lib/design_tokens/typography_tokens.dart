@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 /// Based on cb_designSystem typography scale
 class TypographyTokens {
   // Font family
-  static const String fontFamily = 'SF Pro Display'; // Default iOS system font
+  static const String fontFamily = 'Manrope';
   
   // Font sizes
   static const double fontSize75 = 12.0;

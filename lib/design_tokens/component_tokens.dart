@@ -199,9 +199,9 @@ class ComponentTokens {
       // Colors per spec: rest = brick900, pressed = brick1100 (approx via overlays)
       backgroundColor: DesignTokens.brick900,
       foregroundColor: DesignTokens.white,
-      splashColor: DesignTokens.brick1100.withOpacity(0.24),
-      focusColor: DesignTokens.brick1100.withOpacity(0.12),
-      hoverColor: DesignTokens.brick1100.withOpacity(0.08),
+  splashColor: DesignTokens.brick1100.withValues(alpha: 0.24),
+  focusColor: DesignTokens.brick1100.withValues(alpha: 0.12),
+  hoverColor: DesignTokens.brick1100.withValues(alpha: 0.08),
       elevation: ElevationTokens.floating,
       highlightElevation: ElevationTokens.floating + 2.0,
       shape: const CircleBorder(),

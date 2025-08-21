@@ -149,12 +149,12 @@ class DesignTokensExample extends StatelessWidget {
               spacing: SpacingTokens.spaceSM,
               runSpacing: SpacingTokens.spaceSM,
               children: [
-                _ColorSwatch('Garden Herb', DesignTokens.gardenHerb),
-                _ColorSwatch('Nibble Red', DesignTokens.nibbleRed),
-                _ColorSwatch('Golden Crust', DesignTokens.goldenCrust),
-                _ColorSwatch('Deep Roast', DesignTokens.deepRoast),
-                _ColorSwatch('Cream Whisk', DesignTokens.creamWhisk),
-                _ColorSwatch('Flame Orange', DesignTokens.flameOrange),
+                _colorSwatch('Garden Herb', DesignTokens.gardenHerb),
+                _colorSwatch('Nibble Red', DesignTokens.nibbleRed),
+                _colorSwatch('Golden Crust', DesignTokens.goldenCrust),
+                _colorSwatch('Deep Roast', DesignTokens.deepRoast),
+                _colorSwatch('Cream Whisk', DesignTokens.creamWhisk),
+                _colorSwatch('Flame Orange', DesignTokens.flameOrange),
               ],
             ),
             
@@ -170,12 +170,12 @@ class DesignTokensExample extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _SpacingExample('XS', SpacingTokens.spaceXS),
-                _SpacingExample('SM', SpacingTokens.spaceSM),
-                _SpacingExample('MD', SpacingTokens.spaceMD),
-                _SpacingExample('LG', SpacingTokens.spaceLG),
-                _SpacingExample('XL', SpacingTokens.spaceXL),
-                _SpacingExample('2XL', SpacingTokens.space2XL),
+                _spacingExample('XS', SpacingTokens.spaceXS),
+                _spacingExample('SM', SpacingTokens.spaceSM),
+                _spacingExample('MD', SpacingTokens.spaceMD),
+                _spacingExample('LG', SpacingTokens.spaceLG),
+                _spacingExample('XL', SpacingTokens.spaceXL),
+                _spacingExample('2XL', SpacingTokens.space2XL),
               ],
             ),
           ],
@@ -184,7 +184,7 @@ class DesignTokensExample extends StatelessWidget {
     );
   }
   
-  Widget _ColorSwatch(String name, Color color) {
+  Widget _colorSwatch(String name, Color color) {
     return Column(
       children: [
         Container(
@@ -206,7 +206,7 @@ class DesignTokensExample extends StatelessWidget {
     );
   }
   
-  Widget _SpacingExample(String name, double space) {
+  Widget _spacingExample(String name, double space) {
     return Padding(
       padding: const EdgeInsets.only(bottom: SpacingTokens.spaceSM),
       child: Row(

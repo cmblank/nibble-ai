@@ -55,6 +55,10 @@ class TextColors {
   static const Color danger = DesignTokens.danger;
   static const Color warning = DesignTokens.warning;
   static const Color information = DesignTokens.information;
+
+  // Aliases for design token naming
+  // color/text/medium → use secondary by spec
+  static const Color textMedium = secondary;
 }
 
 /// Background Color Tokens

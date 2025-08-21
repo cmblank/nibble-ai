@@ -1248,6 +1248,8 @@ class _PantryScreenState extends State<PantryScreen> {
           ElevatedButton(
             onPressed: () {
               () async {
+                final nav = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
                 var ok = true;
                 if (PantryService.isAuthenticated && item.id != null) {
                   ok = await PantryService.deleteItem(item.id!);
@@ -1256,15 +1258,13 @@ class _PantryScreenState extends State<PantryScreen> {
                   setState(() {
                     _items.removeWhere((i) => i.id == item.id);
                   });
-                  if (mounted) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Deleted ${item.name}')),
-                    );
-                  }
-                } else if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  nav.pop();
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('Deleted ${item.name}')),
+                  );
+                } else {
+                  nav.pop();
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('Failed to delete item')),
                   );
                 }
