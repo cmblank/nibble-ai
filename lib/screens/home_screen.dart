@@ -73,29 +73,39 @@ class HomeScreen extends StatelessWidget {
   Widget _buildWelcomeBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(SpacingTokens.spaceXL),
+      padding: const EdgeInsets.all(SpacingTokens.spaceMD), // 16px padding
       decoration: BoxDecoration(
-        color: Colors.green,
+        color: const Color(0xFF319B7B), // sage/1000 color from design tokens
         borderRadius: BorderRadius.circular(RadiusTokens.xl),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center, // Center alignment
         children: [
-          Text(
-            'Welcome, Courtney',
-            style: TextStyles.heading200.copyWith(
-              color: Colors.white,
-              fontWeight: TypographyTokens.bold,
-            ),
+          // Text section with 2px spacing between lines
+          Column(
+            children: [
+              Text(
+                'Welcome, Courtney',
+                style: TextStyles.heading200.copyWith(
+                  color: Colors.white,
+                  fontWeight: TypographyTokens.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 2), // 2px spacing between text lines
+              Text(
+                'Let\'s cook something delicious.',
+                style: TextStyles.body85.copyWith(
+                  color: Colors.white,
+                  fontWeight: TypographyTokens.medium,
+                  fontSize: 14,
+                  height: 20 / 14, // line height 20px
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: SpacingTokens.spaceXS),
-          Text(
-            'Let\'s cook something delicious.',
-            style: TextStyles.body100.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: SpacingTokens.spaceLG),
+          const SizedBox(height: 28), // 28px spacing between text and buttons
           Row(
             children: [
               Expanded(
@@ -105,7 +115,7 @@ class HomeScreen extends StatelessWidget {
                   () {},
                 ),
               ),
-              const SizedBox(width: SpacingTokens.spaceMD),
+              const SizedBox(width: SpacingTokens.spaceSM), // 8px gap between buttons
               Expanded(
                 child: _buildWelcomeButton(
                   'Add Pantry Item',
@@ -113,7 +123,7 @@ class HomeScreen extends StatelessWidget {
                   () {},
                 ),
               ),
-              const SizedBox(width: SpacingTokens.spaceMD),
+              const SizedBox(width: SpacingTokens.spaceSM), // 8px gap between buttons
               Expanded(
                 child: _buildWelcomeButton(
                   'Grocery List',
@@ -129,17 +139,25 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWelcomeButton(String text, IconData icon, VoidCallback onTap, {String? badge}) {
+    Widget _buildWelcomeButton(String text, IconData icon, VoidCallback onTap, {String? badge}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: SpacingTokens.spaceMD,
-          horizontal: SpacingTokens.spaceSM,
-        ),
+        padding: const EdgeInsets.all(SpacingTokens.spaceSM), // 8px padding
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(RadiusTokens.lg),
+          border: Border.all(
+            color: DesignTokens.gray300,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Stack(
           children: [
@@ -148,15 +166,16 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: Colors.white,
+                  color: DesignTokens.gray600, // Dark gray icon
                   size: 20,
                 ),
                 const SizedBox(height: SpacingTokens.spaceXS),
                 Text(
                   text,
                   style: TextStyles.body75.copyWith(
-                    color: Colors.white,
-                    fontWeight: TypographyTokens.medium,
+                    color: DesignTokens.gray600, // Medium gray text
+                    fontWeight: TypographyTokens.semibold,
+                    fontSize: 10,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -168,20 +187,21 @@ class HomeScreen extends StatelessWidget {
                 right: -4,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: SpacingTokens.spaceXS,
+                    horizontal: 4,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: DesignTokens.brick900, // Use brand red for badge
                     borderRadius: BorderRadius.circular(RadiusTokens.full),
                   ),
-                                      child: Text(
-                      badge,
-                      style: TextStyles.body75.copyWith(
-                        color: Colors.white,
-                        fontWeight: TypographyTokens.bold,
-                      ),
+                  child: Text(
+                    badge,
+                    style: TextStyles.body75.copyWith(
+                      color: Colors.white,
+                      fontWeight: TypographyTokens.semibold,
+                      fontSize: 8,
                     ),
+                  ),
                 ),
               ),
           ],
