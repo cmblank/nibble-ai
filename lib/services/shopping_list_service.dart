@@ -39,6 +39,35 @@ class ShoppingListService {
     .toList();
   }
 
+  Future<ShoppingListItem?> addItem(ShoppingListItem item) async {
+    final user = SupabaseService.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    final itemToAdd = {
+      'name': item.name,
+      'quantity': item.quantity,
+      'unit': item.unit,
+      'category': item.category,
+      'user_id': user.id,
+      'source': item.source,
+      'note': item.note,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    try {
+      final inserted = await _client
+        .from('shopping_list')
+        .insert(itemToAdd)
+        .select()
+        .single();
+      
+      return ShoppingListItem.fromJson(Map<String, dynamic>.from(inserted));
+    } catch (e) {
+      print('Error adding item to shopping list: $e');
+      return null;
+    }
+  }
+
   Future<void> removeItem(int itemId) async {
     await _client.from('shopping_list').delete().eq('id', itemId);
   }

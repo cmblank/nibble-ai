@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/pantry_service.dart';
+import '../services/shopping_list_service.dart';
 // import '../services/profile_prefs_service.dart';
 import '../models/pantry_item.dart';
 import '../models/pantry_filter.dart';
 import '../models/pantry_enums.dart';
+import '../models/shopping_list_item.dart';
 import '../design_tokens/color_tokens.dart';
 // Bring back non-sticky app bar for Pantry
 import '../utils/profile_storage.dart';
@@ -27,6 +29,7 @@ class _PantryScreenState extends State<PantryScreen> {
   PantryFilter _filter = const PantryFilter();
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
+  final ShoppingListService _shoppingListService = ShoppingListService();
   
   
   @override
@@ -456,13 +459,41 @@ class _PantryScreenState extends State<PantryScreen> {
   final daysUntil = item.expirationDate.difference(DateTime.now()).inDays;
   final showExpiringSoon = daysUntil >= 0 && daysUntil <= 3 && !showUseFirst; // 3-day window; use-first takes precedence
 
-    return PantryCard(
-      item: item,
-      showUseFirst: showUseFirst,
-      showExpiringSoon: showExpiringSoon,
-      onTap: () => _showEditItemDialog(item),
-      onEdit: () => _showEditItemDialog(item),
-      onDelete: () => _deleteItem(item),
+    return Dismissible(
+      key: Key(item.id ?? item.name),
+      direction: DismissDirection.startToEnd, // Swipe right to add to shopping list
+      background: Container(
+        color: Colors.green,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 16),
+        child: const Row(
+          children: [
+            Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+              size: 24,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Add to Shopping List',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      onDismissed: (direction) => _addToShoppingList(item),
+      child: PantryCard(
+        item: item,
+        showUseFirst: showUseFirst,
+        showExpiringSoon: showExpiringSoon,
+        onTap: () => _showEditItemDialog(item),
+        onEdit: () => _showEditItemDialog(item),
+        onDelete: () => _deleteItem(item),
+      ),
     );
   }
 
@@ -1153,6 +1184,54 @@ class _PantryScreenState extends State<PantryScreen> {
         );
       }
     }();
+  }
+
+  void _addToShoppingList(PantryItem item) async {
+    try {
+      // Convert pantry item to shopping list item
+      final shoppingItem = ShoppingListItem(
+        name: item.name,
+        category: item.category.display,
+        quantity: 1.0, // Default quantity
+        unit: item.size ?? '', // Use size if available, otherwise empty
+        source: 'pantry',
+        note: item.details, // Use details as note
+      );
+
+      final addedItem = await _shoppingListService.addItem(shoppingItem);
+      
+      if (addedItem != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added ${item.name} to shopping list'),
+            backgroundColor: DesignTokens.brick900,
+            action: SnackBarAction(
+              label: 'Undo',
+              textColor: Colors.white,
+              onPressed: () async {
+                // TODO: Implement undo functionality if needed
+              },
+            ),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to add item to shopping list'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _deleteItem(PantryItem item) {
