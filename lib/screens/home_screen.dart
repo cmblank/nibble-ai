@@ -8,11 +8,11 @@ import 'achievements_screen.dart';
 import 'chatbot_screen.dart';
 import '../widgets/profile_sheet.dart';
 import 'shopping_list_screen.dart';
-import 'meal_planner_screen.dart';
 import 'pantry_screen_clean.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final void Function(NibbleTab tab)? onNavigateToTab;
+  const HomeScreen({super.key, this.onNavigateToTab});
 
   @override
   Widget build(BuildContext context) {
@@ -88,11 +88,10 @@ class HomeScreen extends StatelessWidget {
             children: [
               Text(
                 'Welcome, Courtney',
-                style: TextStyles.heading200.copyWith(
+                style: TextStyles.heading150.copyWith(
                   color: Colors.white,
-      // Reduce to semi-bold per design tweak
-      fontWeight: TypographyTokens.semibold,
-                  fontFamily: 'Manrope',
+                  // heading150 is already semibold; keep explicit for clarity
+                  fontWeight: TypographyTokens.semibold,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -118,10 +117,8 @@ class HomeScreen extends StatelessWidget {
                   'Plan Week',
       Icons.calendar_today,
       () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MealPlannerScreen()),
-        );
+        // Prefer switching to the Planning tab rather than pushing a new screen
+        onNavigateToTab?.call(NibbleTab.planning);
       },
       assetName: 'assets/images/icon-calendar-date.png',
                 ),
