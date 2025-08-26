@@ -47,30 +47,31 @@ class _MealPlannerState extends State<_MealPlanner> {
   DateTime _anchor = DateTime.now();
   // Horizontal week scroller state
   final ScrollController _weekScrollController = ScrollController();
-  final Map<String, GlobalKey> _weekKeys = {}; // key per week (yyyy-mm-dd) for ensureVisible
-  final Set<String> _acquired = {}; // local acquired ingredients
+  final Map<String, GlobalKey> _weekKeys = {};
+  // Local acquired ingredients for this week
+  final Set<String> _acquired = {};
   static const _acquiredKeyPrefix = 'acquired_';
-  int _breakfasts = 0;
+  int _breakfasts = 0; // retained for potential future use
   int _lunches = 0;
   DateTime? _lastSync;
   // Autosync state
-  final List<PlanEntry> _pendingQueue = []; // local edits awaiting push
-  Timer? _debounce; // debounce timer for autosync
-  bool _syncInFlight = false; // guard concurrent sync
+  final List<PlanEntry> _pendingQueue = [];
+  Timer? _debounce;
+  bool _syncInFlight = false;
   static const Duration _autosyncDebounce = Duration(seconds: 4);
-  static const Duration _maxSilentPullAge = Duration(minutes: 5); // after this, pull remote during autosync flush
+  static const Duration _maxSilentPullAge = Duration(minutes: 5);
   static const String _pendingQueueKey = 'pending_plan_queue';
-  // Connectivity & backoff
+  // Connectivity
   int _consecutiveFailures = 0;
-  StreamSubscription<dynamic>? _connSub; // handles API returning List<ConnectivityResult>
+  StreamSubscription<dynamic>? _connSub;
   bool _online = true;
   Timer? _backoffTimer;
-  // Swap undo stack: list of (oldEntry, newEntry)
+  // Swap history
   final List<Map<String,PlanEntry>> _swapHistory = [];
   // Suggestions
   List<ScoredRecipe> _dinnerSuggestions = [];
   UserProfile? _profile;
-  int _desiredDinnersCache = 7; // snapshot of settings at last load
+  int _desiredDinnersCache = 7;
 
   @override
   void initState() {
@@ -78,49 +79,35 @@ class _MealPlannerState extends State<_MealPlanner> {
     _load();
     _connSub = Connectivity().onConnectivityChanged.listen((res){
       final wasOnline = _online;
-      // Treat emission as List<ConnectivityResult> (connectivity_plus v6)
-      try {
-        final list = res.cast<ConnectivityResult>();
-        _online = list.any((r) => r != ConnectivityResult.none);
-      } catch (_) { _online = true; }
-      if (_online && !wasOnline) {
-        // Came online: attempt immediate flush (respect backoff cancellation)
-        _backoffTimer?.cancel();
-        _scheduleAutosync();
-      }
+      try { final list = res.cast<ConnectivityResult>(); _online = list.any((r)=> r != ConnectivityResult.none); } catch(_){ _online = true; }
+      if (_online && !wasOnline) { _backoffTimer?.cancel(); _scheduleAutosync(); }
       if (mounted) setState((){});
     });
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-  final userId = SupabaseService.currentUser?.id ?? 'anon';
-  await UserProfileService.getOrCreate(userId); // ensure profile cached
+    setState(()=> _loading = true);
+    final userId = SupabaseService.currentUser?.id ?? 'anon';
+    await UserProfileService.getOrCreate(userId);
     final pool = await RecipeService.fetchAll();
     await WeeklyPlannerService.init();
     var plan = WeeklyPlannerService.loadWeek(_anchor);
-    // Desired dinners from settings (if loaded); fallback to 7
     final settings = SettingsService();
     if(!settings.isLoaded){ await settings.load(); }
     final desiredDinners = settings.plannedDinners;
-  _desiredDinnersCache = desiredDinners;
+    _desiredDinnersCache = desiredDinners;
     if (plan.isEmpty) {
       plan = await WeeklyPlannerService.generateWeek(userId: userId, pool: pool, anchor: _anchor, breakfasts: _breakfasts, lunches: _lunches, dinners: desiredDinners);
     }
-    // Pull remote and merge
     final remote = await SyncService.pullPlan(userId);
     if (remote.isNotEmpty) {
       final merged = SyncService.mergePlan(local: plan, remote: remote);
-      // Save merged locally & push diff
       for (final e in merged) { await WeeklyPlannerService.saveEntry(e); }
-      // fire-and-forget push
       // ignore: unawaited_futures
       SyncService.pushPlanEntries(merged, userId);
-      plan = merged;
-      _lastSync = DateTime.now();
+      plan = merged; _lastSync = DateTime.now();
     }
     final shopping = await WeeklyPlannerService.buildShoppingList(plan, pool);
-    // Load acquired set for this week from SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final key = _acquiredStorageKey();
     final stored = prefs.getStringList(key) ?? const [];
@@ -129,14 +116,11 @@ class _MealPlannerState extends State<_MealPlanner> {
       _recipes = pool;
       _plan = plan;
       _shopping = shopping;
-      _acquired
-        ..clear()
-        ..addAll(stored);
+      _acquired..clear()..addAll(stored);
       _loading = false;
     });
-  await _computeDinnerSuggestions();
-  // Load any persisted pending queue (best effort)
-  _restorePendingQueue();
+    await _computeDinnerSuggestions();
+    _restorePendingQueue();
   }
 
   // Primary build already exists earlier; suggestions row is injected elsewhere.
@@ -199,18 +183,6 @@ class _MealPlannerState extends State<_MealPlanner> {
   }
 
 
-  Future<void> _shuffleSpecific(DateTime date, MealType meal) async {
-  final userId = SupabaseService.currentUser?.id ?? 'anon';
-    final entry = await WeeklyPlannerService.shuffleDay(date, userId: userId, pool: _recipes, mealType: meal);
-    if (entry != null) {
-      await _refreshShopping();
-      setState(() {
-        _plan.removeWhere((e) => e.date.year==date.year && e.date.month==date.month && e.date.day==date.day && e.mealType==entry.mealType);
-        _plan.add(entry);
-        _plan.sort((a,b)=> a.date.compareTo(b.date));
-      });
-    }
-  }
 
   Widget _suggestionsSection() {
     if (_dinnerSuggestions.isEmpty) return const SizedBox.shrink();
@@ -366,6 +338,8 @@ class _MealPlannerState extends State<_MealPlanner> {
                               if (isPast) const SizedBox(width: 2),
                               if (isFuture) const Icon(Icons.arrow_forward, size: 12, color: Colors.black38),
                               if (isFuture) const SizedBox(width: 2),
+                              const Icon(Icons.calendar_today, size: 12, color: Colors.black45),
+                              const SizedBox(width: 4),
                               Text(label, style: TextStyles.body75.copyWith(fontWeight: selected ? TypographyTokens.bold : TypographyTokens.medium, color: selected ? DesignTokens.sage1000 : Colors.black87)),
                             ],
                           ),
@@ -598,7 +572,7 @@ class _MealPlannerState extends State<_MealPlanner> {
                         const SizedBox(height: 12),
                         _suggestionsSection(),
                         const SizedBox(height: 12),
-                        _planTable(),
+                        _planDayList(),
                         const SizedBox(height: 24),
                         _shoppingHeader(),
                         const SizedBox(height: 8),
@@ -613,120 +587,142 @@ class _MealPlannerState extends State<_MealPlanner> {
   }
 
 
-  Widget _planTable() {
-    final days = List.generate(7, (i){ final d = _anchor.subtract(Duration(days: _anchor.weekday - 1 - i)); return DateTime(d.year,d.month,d.day);});
+  Widget _planDayList() {
+    final monday = _anchor.subtract(Duration(days: _anchor.weekday - 1));
+    final days = List.generate(7, (i)=> monday.add(Duration(days:i)));
     _plan.sort((a,b)=> a.date.compareTo(b.date));
-    return Card(
-      child: Table(
-        columnWidths: const {0: FixedColumnWidth(90)},
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final day in days) _daySection(day),
+      ],
+    );
+  }
+
+  Widget _daySection(DateTime day) {
+    final entries = _plan.where((e)=> e.date.year==day.year && e.date.month==day.month && e.date.day==day.day && e.mealType==MealType.dinner).toList();
+    final label = _longDate(day);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TableRow(children: [
-            const Padding(padding: EdgeInsets.all(8), child: Text('Day', style: TextStyle(fontWeight: FontWeight.bold))),
-            if (_breakfasts>0) const Padding(padding: EdgeInsets.all(8), child: Text('Breakfast', style: TextStyle(fontWeight: FontWeight.bold))),
-            if (_lunches>0) const Padding(padding: EdgeInsets.all(8), child: Text('Lunch', style: TextStyle(fontWeight: FontWeight.bold))),
-            const Padding(padding: EdgeInsets.all(8), child: Text('Dinner', style: TextStyle(fontWeight: FontWeight.bold))),
-            const Padding(padding: EdgeInsets.all(8), child: Text('Cooked', style: TextStyle(fontWeight: FontWeight.bold))),
-            const SizedBox(),
-          ]),
-          for (final day in days) _rowFor(day),
+          Text(label, style: TextStyles.body100.copyWith(fontWeight: TypographyTokens.bold)),
+          const SizedBox(height: 8),
+          if (entries.isEmpty)
+            _emptyDayCard(day)
+          else
+            for (final e in entries) _recipeDayCard(e),
         ],
       ),
     );
   }
 
-  TableRow _rowFor(DateTime day) {
-    PlanEntry lookup(MealType m) => _plan.firstWhere(
-      (e) => e.date.year==day.year && e.date.month==day.month && e.date.day==day.day && e.mealType==m,
-      orElse: () => PlanEntry(date: day, mealType: m, recipeId: ''),
-    );
-    final dinner = lookup(MealType.dinner);
-    final breakfast = _breakfasts>0 ? lookup(MealType.breakfast) : null;
-    final lunch = _lunches>0 ? lookup(MealType.lunch) : null;
-    final cookedEntry = dinner.recipeId.isNotEmpty ? dinner : (lunch?.recipeId.isNotEmpty == true ? lunch! : (breakfast?.recipeId.isNotEmpty == true ? breakfast! : dinner));
-    return TableRow(children: [
-      Padding(padding: const EdgeInsets.all(8), child: Text(_weekdayLabel(day.weekday))),
-  if (_breakfasts>0) Padding(padding: const EdgeInsets.all(8), child: _mealCell(breakfast!)),
-  if (_lunches>0) Padding(padding: const EdgeInsets.all(8), child: _mealCell(lunch!)),
-  Padding(padding: const EdgeInsets.all(8), child: _mealCell(dinner)),
-      Center(
-        child: cookedEntry.recipeId.isEmpty ? const SizedBox() : Checkbox(
-          value: cookedEntry.cooked,
-          onChanged: (v) async {
-            if (cookedEntry.recipeId.isEmpty) return;
-            await WeeklyPlannerService.setCooked(cookedEntry, SupabaseService.currentUser?.id ?? 'anon', v ?? false);
-            final idx = _plan.indexWhere((p)=> p.date==cookedEntry.date && p.mealType==cookedEntry.mealType);
-            if (idx != -1) {
-              setState(()=> _plan[idx] = _plan[idx].copyWith(cooked: v ?? false));
-              _pendingQueue.add(_plan[idx]);
-              _scheduleAutosync();
-            }
-          },
+  String _longDate(DateTime d) {
+    final wday = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.weekday%7];
+    final monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return '$wday, ${monthNames[d.month-1]} ${d.day}';
+  }
+
+  Widget _emptyDayCard(DateTime day) {
+    return Card(
+      color: DesignTokens.gray200,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextButton.icon(
+                onPressed: () => _addFromSuggestions(day),
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Add Recipe'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: () {/* skip logic placeholder */},
+              style: TextButton.styleFrom(backgroundColor: Colors.grey.shade300),
+              child: const Text('+ Skip'),
+            ),
+          ],
         ),
       ),
-      Row(children: [
-        if (_breakfasts>0) IconButton(onPressed: () => _shuffleSpecific(day, MealType.breakfast), icon: const Icon(Icons.shuffle, size: 20), tooltip: 'Shuffle breakfast'),
-        if (_lunches>0) IconButton(onPressed: () => _shuffleSpecific(day, MealType.lunch), icon: const Icon(Icons.shuffle, size: 20), tooltip: 'Shuffle lunch'),
-        IconButton(onPressed: () => _shuffleSpecific(day, MealType.dinner), icon: const Icon(Icons.shuffle, size: 20), tooltip: 'Shuffle dinner'),
-        if (dinner.recipeId.isNotEmpty)
-          IconButton(
-            onPressed: () => _openSwapModal(dinner),
-            icon: const Icon(Icons.swap_horiz, size: 20),
-            tooltip: 'Swap dinner',
-          ),
-      ]),
-    ]);
-  }
-
-  Widget _mealCell(PlanEntry e) {
-    if (e.recipeId.isEmpty) return const Text('—');
-    final name = _recipeName(e.recipeId);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        Row(children:[
-          Text('${e.servings ?? ''} serv', style: const TextStyle(fontSize: 11, color: Colors.black54)),
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 28, height: 28),
-            icon: const Icon(Icons.edit, size: 14),
-            tooltip: 'Edit servings',
-            onPressed: () => _editServings(e),
-          ),
-        ])
-      ],
     );
   }
 
-  void _editServings(PlanEntry entry) {
-    final ctrl = TextEditingController(text: (entry.servings ?? '').toString());
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: const Text('Set Servings'),
-      content: TextField(
-        controller: ctrl,
-        keyboardType: TextInputType.number,
-        decoration: const InputDecoration(labelText: 'Servings'),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        ElevatedButton(onPressed: () async {
-          final v = int.tryParse(ctrl.text.trim());
-          if (v!=null && v>0) {
-            final idx = _plan.indexWhere((p)=> p.date==entry.date && p.mealType==entry.mealType);
-            if (idx!=-1) {
-              setState(()=> _plan[idx] = _plan[idx].copyWith(servings: v));
-              await WeeklyPlannerService.saveEntry(_plan[idx]);
-              await _refreshShopping();
-              _pendingQueue.add(_plan[idx]);
-              _scheduleAutosync();
-            }
-          }
-          if (context.mounted) Navigator.pop(context);
-        }, child: const Text('Save')),
-      ],
-    ));
+  Future<void> _addFromSuggestions(DateTime day) async {
+    if (_dinnerSuggestions.isEmpty) return;
+    final r = _dinnerSuggestions.first.recipe;
+    final entry = PlanEntry(date: day, mealType: MealType.dinner, recipeId: r.id, servings: _profile?.baseHouseholdSize);
+    await WeeklyPlannerService.saveEntry(entry);
+    setState(() { _plan.removeWhere((p)=> p.date==day && p.mealType==MealType.dinner); _plan.add(entry); });
+    await _refreshShopping();
+    await _computeDinnerSuggestions();
   }
+
+  Widget _recipeDayCard(PlanEntry entry) {
+    final rName = _recipeName(entry.recipeId);
+    final recipe = _recipes.firstWhere((r)=> r.id==entry.recipeId, orElse: ()=> Recipe(id: entry.recipeId, name: rName, createdAt: DateTime.now()));
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_)=> RecipeDetailScreen(recipeId: recipe.id, initial: recipe))),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: recipe.imageUrl!=null && recipe.imageUrl!.isNotEmpty
+                    ? Image.network(recipe.imageUrl!, fit: BoxFit.cover)
+                    : Image.asset('assets/images/meal-salad.png', fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: Text(recipe.name, style: TextStyles.body100.copyWith(fontWeight: TypographyTokens.semibold), maxLines: 2, overflow: TextOverflow.ellipsis)),
+                        IconButton(
+                          icon: const Icon(Icons.swap_horiz, size: 18, color: Colors.black54),
+                          tooltip: 'Swap',
+                          onPressed: () => _openSwapModal(entry),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(spacing: 8, runSpacing: -4, children: [
+                      if (recipe.servings != null) _chip('${recipe.servings} serv'),
+                      if (recipe.cookingTimeMinutes != null) _chip('${recipe.cookingTimeMinutes}m'),
+                      _chip('Quick'),
+                      _chip('Medium'),
+                    ]),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(String text) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(color: DesignTokens.sage100, borderRadius: BorderRadius.circular(6)),
+    child: Text(text, style: TextStyles.caption.copyWith(color: DesignTokens.sage1000)),
+  );
+
+
 
   Future<void> _openSwapModal(PlanEntry entry) async {
     final userId = SupabaseService.currentUser?.id ?? 'anon';
@@ -838,7 +834,6 @@ class _MealPlannerState extends State<_MealPlanner> {
 
   String _recipeName(String id) => _recipes.firstWhere((r) => r.id == id, orElse: () => Recipe(id: id, name: 'Recipe', createdAt: DateTime.now())).name;
 
-  String _weekdayLabel(int wd) => const ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][wd-1];
 
   Widget _shoppingHeader() => Row(
     children: [
