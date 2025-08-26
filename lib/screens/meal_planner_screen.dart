@@ -23,6 +23,7 @@ import '../models/user_profile.dart';
 import '../design_tokens/color_tokens.dart';
 import '../design_tokens/typography_tokens.dart';
 import 'recipe_detail_screen.dart';
+import 'planning_swipe_screen.dart';
 
 class MealPlannerScreen extends StatelessWidget {
   const MealPlannerScreen({super.key});
@@ -303,6 +304,18 @@ class _MealPlannerState extends State<_MealPlanner> {
                 icon: const Icon(Icons.sync, size: 16),
                 label: const Text('Adjust'),
               ),
+              const Spacer(),
+              // Quick access to swipe planning for current week only
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await Navigator.push(context, MaterialPageRoute(builder: (_)=> const PlanningSwipeScreen()));
+                  // Reload after returning to reflect any new dinners
+                  if (mounted) { _load(); }
+                },
+                icon: const Icon(Icons.view_carousel, size: 16),
+                label: const Text('Plan Dinners'),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -317,14 +330,29 @@ class _MealPlannerState extends State<_MealPlanner> {
                 return GestureDetector(
                   onTap: () { setState(()=> _anchor = wStart); _load(); },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: selected ? DesignTokens.white : DesignTokens.gray200,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: selected ? DesignTokens.sage1000 : Colors.transparent),
                     ),
-                    child: Center(
-                      child: Text(label, style: TextStyles.body75.copyWith(fontWeight: selected ? TypographyTokens.bold : TypographyTokens.medium, color: selected ? DesignTokens.sage1000 : Colors.black87)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(label, style: TextStyles.body75.copyWith(fontWeight: selected ? TypographyTokens.bold : TypographyTokens.medium, color: selected ? DesignTokens.sage1000 : Colors.black87)),
+                        const SizedBox(height: 4),
+                        InkWell(
+                          onTap: () async {
+                            await Navigator.push(context, MaterialPageRoute(builder: (_)=> PlanningSwipeScreen(anchorMonday: wStart)));
+                            if (mounted) { _load(); }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(color: selected ? DesignTokens.sage1000 : Colors.black54, borderRadius: BorderRadius.circular(4)),
+                            child: Text('Plan', style: TextStyles.caption.copyWith(color: Colors.white)),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );

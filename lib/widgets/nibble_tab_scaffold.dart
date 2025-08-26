@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
 import '../screens/recipes_screen.dart';
 import '../screens/pantry_screen_clean.dart';
-import '../screens/planning_home_screen.dart';
+import '../screens/meal_planner_screen.dart';
 import '../screens/more_panel.dart';
 import '../screens/chatbot_screen.dart';
 import '../screens/achievements_screen.dart';
@@ -130,7 +130,7 @@ class _NibbleTabScaffoldState extends State<NibbleTabScaffold> {
             ),
             _buildTabNavigator(NibbleTab.recipes, const RecipesScreen()),
             _buildTabNavigator(NibbleTab.pantry, const PantryScreen()),
-            _buildTabNavigator(NibbleTab.planning, const PlanningHomeScreen()),
+            _buildTabNavigator(NibbleTab.planning, const MealPlannerScreen()),
             // More tab opens a panel; keep a lightweight placeholder here
             _buildTabNavigator(NibbleTab.more, const SizedBox.shrink()),
           ],
