@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../widgets/nibble_app_bar.dart';
 import 'chatbot_screen.dart';
-import 'achievements_screen.dart';
 import '../widgets/profile_sheet.dart';
 import '../services/weekly_planner_service.dart';
 import '../services/recipe_service.dart';
@@ -558,47 +557,15 @@ class _MealPlannerState extends State<_MealPlanner> {
     }
   }
 
-  String _sinceSync() {
-    if (_lastSync == null) return '';
-    final diff = DateTime.now().difference(_lastSync!);
-    if (diff.inMinutes < 1) return 'Synced now';
-    if (diff.inMinutes < 60) return 'Synced ${diff.inMinutes}m ago';
-    return 'Synced ${diff.inHours}h ago';
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: NibbleAppBar(
         currentTab: NibbleTab.planning,
-        showAchievements: true,
-        showBack: true,
-        onChatTap: (_) => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen())),
-        onAchievementsTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsScreen())),
-        onProfileTap: () => showProfileSheet(context),
-        actions: [
-          _mealCountSelector('B', _breakfasts, (v){ setState(()=> _breakfasts = v); }),
-          const SizedBox(width: 4),
-            _mealCountSelector('L', _lunches, (v){ setState(()=> _lunches = v); }),
-          const SizedBox(width: 8),
-          if (_lastSync != null)
-            Padding(
-              padding: const EdgeInsets.only(right:8),
-              child: Text(_sinceSync(), style: const TextStyle(fontSize: 11, color: Colors.white70)),
-            ),
-          IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sync now',
-            onPressed: () async {
-              await _syncNow();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Regenerate Week',
-            onPressed: _load,
-          )
-        ],
+  showBack: true,
+  onChatTap: (_) => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen())),
+  onProfileTap: () => showProfileSheet(context),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -869,20 +836,6 @@ class _MealPlannerState extends State<_MealPlanner> {
     }
   }
 
-  Widget _mealCountSelector(String label, int value, ValueChanged<int> onChanged) {
-    return Row(children: [
-      Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-      SizedBox(
-        width: 40,
-        child: TextField(
-          decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical:4,horizontal:6), border: OutlineInputBorder()),
-          keyboardType: TextInputType.number,
-          controller: TextEditingController(text: value.toString()),
-          onSubmitted: (s){ final v = int.tryParse(s)??0; onChanged(v.clamp(0,7)); },
-        ),
-      ),
-    ]);
-  }
 
   String _recipeName(String id) => _recipes.firstWhere((r) => r.id == id, orElse: () => Recipe(id: id, name: 'Recipe', createdAt: DateTime.now())).name;
 
