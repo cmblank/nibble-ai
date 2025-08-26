@@ -46,6 +46,9 @@ class _MealPlannerState extends State<_MealPlanner> {
   List<Recipe> _recipes = [];
   List<ShoppingListItem> _shopping = [];
   DateTime _anchor = DateTime.now();
+  // Horizontal week scroller state
+  final ScrollController _weekScrollController = ScrollController();
+  final Map<String, GlobalKey> _weekKeys = {}; // key per week (yyyy-mm-dd) for ensureVisible
   final Set<String> _acquired = {}; // local acquired ingredients
   static const _acquiredKeyPrefix = 'acquired_';
   int _breakfasts = 0;
@@ -287,11 +290,25 @@ class _MealPlannerState extends State<_MealPlanner> {
 
   Widget _weekTabs() {
     final monday = _anchor.subtract(Duration(days: _anchor.weekday - 1));
-    final weeks = List.generate(6, (i)=> monday.add(Duration(days: 7*i)));
+    // Build a larger window of weeks: 12 past + current + 24 future (adjust as needed)
+    // Keep list modest to avoid huge build cost while enabling quick scroll.
+    const pastCount = 12;
+    const futureCount = 24;
+    final firstWeek = monday.subtract(const Duration(days: 7*pastCount));
+    final total = pastCount + 1 + futureCount; // include current
+    final weeks = List.generate(total, (i)=> firstWeek.add(Duration(days: 7*i)));
     final dinnerCount = _plan.where((e)=> e.mealType==MealType.dinner).length;
     final showRebalance = dinnerCount != _desiredDinnersCache;
+    // After build, ensure current week is visible (only first time or on anchor change)
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      final key = _weekKeyFor(monday);
+      final ctx = key.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 300), alignment: 0.5, curve: Curves.easeInOut);
+      }
+    });
     return SizedBox(
-      height: 100, // increased to prevent RenderFlex overflow after adding Plan button
+      height: 110,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -305,11 +322,9 @@ class _MealPlannerState extends State<_MealPlanner> {
                 label: const Text('Adjust'),
               ),
               const Spacer(),
-              // Quick access to swipe planning for current week only
               ElevatedButton.icon(
                 onPressed: () async {
                   await Navigator.push(context, MaterialPageRoute(builder: (_)=> const PlanningSwipeScreen()));
-                  // Reload after returning to reflect any new dinners
                   if (mounted) { _load(); }
                 },
                 icon: const Icon(Icons.view_carousel, size: 16),
@@ -321,38 +336,54 @@ class _MealPlannerState extends State<_MealPlanner> {
           const SizedBox(height: 4),
           Expanded(
             child: ListView.separated(
+              controller: _weekScrollController,
               scrollDirection: Axis.horizontal,
               itemBuilder: (c,i) {
                 final wStart = weeks[i];
                 final wEnd = wStart.add(const Duration(days:6));
                 final selected = wStart.year==monday.year && wStart.month==monday.month && wStart.day==monday.day;
                 final label = '${_shortMonth(wStart.month)} ${wStart.day}-${wEnd.day}';
+                final key = _weekKeyFor(wStart);
+                final isPast = wStart.isBefore(monday);
+                final isFuture = wStart.isAfter(monday);
                 return GestureDetector(
+                  key: key,
                   onTap: () { setState(()=> _anchor = wStart); _load(); },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: selected ? DesignTokens.white : DesignTokens.gray200,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: selected ? DesignTokens.sage1000 : Colors.transparent),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(label, style: TextStyles.body75.copyWith(fontWeight: selected ? TypographyTokens.bold : TypographyTokens.medium, color: selected ? DesignTokens.sage1000 : Colors.black87)),
-                        const SizedBox(height: 4),
-                        InkWell(
-                          onTap: () async {
-                            await Navigator.push(context, MaterialPageRoute(builder: (_)=> PlanningSwipeScreen(anchorMonday: wStart)));
-                            if (mounted) { _load(); }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(color: selected ? DesignTokens.sage1000 : Colors.black54, borderRadius: BorderRadius.circular(4)),
-                            child: Text('Plan', style: TextStyles.caption.copyWith(color: Colors.white)),
+                  child: Opacity(
+                    opacity: selected ? 1 : 0.85,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: selected ? DesignTokens.white : DesignTokens.gray200,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: selected ? DesignTokens.sage1000 : Colors.transparent),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              if (isPast) const Icon(Icons.history, size: 12, color: Colors.black45),
+                              if (isPast) const SizedBox(width: 2),
+                              if (isFuture) const Icon(Icons.arrow_forward, size: 12, color: Colors.black38),
+                              if (isFuture) const SizedBox(width: 2),
+                              Text(label, style: TextStyles.body75.copyWith(fontWeight: selected ? TypographyTokens.bold : TypographyTokens.medium, color: selected ? DesignTokens.sage1000 : Colors.black87)),
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          InkWell(
+                            onTap: () async {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_)=> PlanningSwipeScreen(anchorMonday: wStart)));
+                              if (mounted) { _load(); }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(color: selected ? DesignTokens.sage1000 : Colors.black54, borderRadius: BorderRadius.circular(4)),
+                              child: Text('Plan', style: TextStyles.caption.copyWith(color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -364,6 +395,11 @@ class _MealPlannerState extends State<_MealPlanner> {
         ],
       ),
     );
+  }
+
+  GlobalKey _weekKeyFor(DateTime monday) {
+    final id = '${monday.year}-${monday.month}-${monday.day}';
+    return _weekKeys.putIfAbsent(id, () => GlobalKey());
   }
 
   Future<void> _rebalanceWeek() async {
@@ -1070,6 +1106,7 @@ class _MealPlannerState extends State<_MealPlanner> {
     _connSub?.cancel();
     _backoffTimer?.cancel();
     _debounce?.cancel();
+  _weekScrollController.dispose();
     super.dispose();
   }
 }
