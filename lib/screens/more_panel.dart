@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../design_tokens/color_tokens.dart';
-import '../widgets/profile_sheet.dart';
+// Removed profile_sheet import (settings now separate screen)
+import 'settings_screen.dart';
 import 'academy_screen.dart';
 import 'achievements_screen.dart';
 import 'kitchen_screen.dart';
@@ -66,12 +67,7 @@ class MorePanel extends StatelessWidget {
               icon: const Icon(Icons.settings_outlined, color: DesignTokens.brick900),
               title: 'Settings',
               subtitle: 'App preferences and notifications',
-              onTap: () {
-                final nav = Navigator.of(rootContext);
-                nav.pop();
-                // ignore: use_build_context_synchronously
-                Future.microtask(() => showProfileSheet(nav.context));
-              },
+              onTap: () => _navigateAfterClose(const SettingsScreen()),
             ),
             _card(
               context,

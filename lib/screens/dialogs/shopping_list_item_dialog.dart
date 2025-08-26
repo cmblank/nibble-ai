@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_colors.dart';
 import '../../models/shopping_list_item.dart';
+import '../../utils/ingredient_categorizer.dart';
 
 class ShoppingListItemDialog extends StatefulWidget {
   final ShoppingListItem? item;
@@ -56,6 +57,11 @@ class _ShoppingListItemDialogState extends State<ShoppingListItemDialog> {
     _noteController = TextEditingController(text: widget.item?.note ?? '');
     _selectedCategory = widget.item?.category ?? _categories[0];
     _selectedUnit = widget.item?.unit ?? _units[0];
+
+    // Listen to name changes to auto-suggest category when adding new
+    if (widget.item == null) {
+      _nameController.addListener(_maybeSuggestCategory);
+    }
   }
 
   @override
@@ -64,6 +70,15 @@ class _ShoppingListItemDialogState extends State<ShoppingListItemDialog> {
     _quantityController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _maybeSuggestCategory() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    final suggested = IngredientCategorizer.categorize(name, fallback: _selectedCategory);
+    if (suggested != _selectedCategory) {
+      setState(() { _selectedCategory = suggested; });
+    }
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_colors.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -235,6 +236,34 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                     ),
+                  const SizedBox(height: 24),
+                  // Magic link button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : () async {
+                        final email = _emailController.text.trim();
+                        if (email.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter email first.')));
+                          return;
+                        }
+                        setState(()=> _isLoading = true);
+                        try {
+                          await Supabase.instance.client.auth.signInWithOtp(email: email, emailRedirectTo: 'io.supabase.nibbleai://auth-callback');
+                          if (!mounted) return; ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Magic link sent. Check your inbox.')));
+                        } catch (e) {
+                          if (!mounted) return; ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Magic link error: $e')));
+                        } finally { if (mounted) setState(()=> _isLoading = false); }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white54),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Email me a magic link'),
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // Auth Button

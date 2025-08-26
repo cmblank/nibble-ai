@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     tags JSONB DEFAULT '[]'::jsonb,
     nutrition_info JSONB DEFAULT '{}'::jsonb,
     image_url TEXT,
+    source_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

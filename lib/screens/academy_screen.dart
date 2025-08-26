@@ -62,25 +62,33 @@ class AcademyScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.75,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildSkillCard(
-                    _essentialSkills[index]['title']!,
-                    _essentialSkills[index]['icon']!,
-                    _essentialSkills[index]['lessons']!,
+            if (_essentialSkills.isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.75,
                   ),
-                  childCount: _essentialSkills.length,
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildSkillCard(
+                      _essentialSkills[index]['title']!,
+                      _essentialSkills[index]['icon']!,
+                      _essentialSkills[index]['lessons']!,
+                    ),
+                    childCount: _essentialSkills.length,
+                  ),
+                ),
+              )
+            else
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('No skills to show', style: TextStyle(color: Colors.grey)),
                 ),
               ),
-            ),
             const SliverToBoxAdapter(
               child: SizedBox(height: 24),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// A Figma-spec selection chip used inside MultiSelectPills.
 /// States:
@@ -26,6 +27,14 @@ class _SelectionChipState extends State<SelectionChip>
   static const _kDuration = Duration(milliseconds: 260);
   static const _kCurve = Curves.easeInOutCubic;
   bool _isHovered = false;
+  void _setHoveredDeferred(bool value) {
+    if (_isHovered == value || !mounted) return;
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      Future.microtask(() { if (mounted) setState(()=> _isHovered = value); });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_){ if (mounted) setState(()=> _isHovered = value); });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +91,8 @@ class _SelectionChipState extends State<SelectionChip>
   // iconSpace no longer needed since we animate icon width from 0
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) => _setHoveredDeferred(true),
+      onExit: (_) => _setHoveredDeferred(false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
@@ -305,6 +314,14 @@ class _OtherInlineInput extends StatefulWidget {
 
 class _OtherInlineInputState extends State<_OtherInlineInput> {
   bool _hovered = false;
+  void _setHoverDeferred(bool v) {
+    if (_hovered == v || !mounted) return;
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      Future.microtask(() { if (mounted) setState(()=> _hovered = v); });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_){ if (mounted) setState(()=> _hovered = v); });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -318,8 +335,8 @@ class _OtherInlineInputState extends State<_OtherInlineInput> {
     final Color border = _hovered ? hoverBorder : restBorder;
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      onEnter: (_) => _setHoverDeferred(true),
+      onExit: (_) => _setHoverDeferred(false),
       cursor: SystemMouseCursors.text,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

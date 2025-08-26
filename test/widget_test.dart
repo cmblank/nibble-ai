@@ -8,11 +8,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:nibble_ai/screens/main_app.dart';
 import 'package:nibble_ai/utils/profile_storage.dart';
 
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  // Ensure shared prefs plugin is mocked before Supabase init
+  SharedPreferences.setMockInitialValues(const {});
+    // Initialize Supabase with dummy values for widget tests to avoid assertion failures.
+    try {
+  await Supabase.initialize(
+        url: 'https://test.supabase.co',
+        anonKey: 'test-anon-key',
+      );
+    } catch (_) {
+      // Ignore if already initialized in a previous test run.
+    }
+  });
   testWidgets('Nibble app loads with bottom navigation', (WidgetTester tester) async {
   // Mock SharedPreferences and ensure a stored profile exists so MainApp shows tabs
   SharedPreferences.setMockInitialValues({});

@@ -45,7 +45,7 @@ class ShoppingListItem {
     'category': category,
     'quantity': quantity,
     'unit': unit,
-    'isChecked': isChecked,
+  'is_purchased': isChecked,
     'note': note,
     'source': source,
   };
@@ -58,7 +58,7 @@ class ShoppingListItem {
         ? (json['quantity'] as int).toDouble()
         : (json['quantity'] as num?)?.toDouble() ?? 1,
     unit: json['unit'] as String? ?? '',
-    isChecked: json['isChecked'] as bool? ?? false,
+  isChecked: (json['is_purchased'] as bool?) ?? (json['isChecked'] as bool?) ?? false,
     note: json['note'] as String?,
     source: json['source'] as String? ?? 'manual',
   );

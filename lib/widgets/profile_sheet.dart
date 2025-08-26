@@ -215,6 +215,21 @@ Future<void> showProfileSheet(BuildContext context) async {
                       _showResetConfirmation(rootCtx);
                     },
                   ),
+                  const SizedBox(height: 16),
+                  _ProfileMenuItem(
+                    icon: '🚪',
+                    title: 'Sign Out',
+                    subtitle: 'Sign out of your account',
+                    onTap: () async {
+                      Navigator.pop(sheetContext);
+                      await SupabaseService.signOut();
+                      if (rootCtx.mounted) {
+                        ScaffoldMessenger.of(rootCtx).showSnackBar(
+                          const SnackBar(content: Text('Signed out')),
+                        );
+                      }
+                    },
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),

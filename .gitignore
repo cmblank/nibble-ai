@@ -46,3 +46,9 @@ app.*.map.json
 
 # Ignore nested MCP repo directory
 /cursor-talk-to-figma-mcp/
+
+# Local Supabase env (secrets)
+supabase/.env
+
+# Local developer environment (not committed)
+.env.local

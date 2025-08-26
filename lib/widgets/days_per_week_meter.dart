@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../config/app_colors.dart';
 
 /// Figma-spec 0–7 days/week meter with animated track fill and hover/selected states.
@@ -44,6 +45,15 @@ class DaysPerWeekMeter extends StatelessWidget {
         }
 
         int? hoverIndex;
+        void setHover(int? i, void Function(void Function()) setSBState) {
+          if (hoverIndex == i) return;
+          void apply() { hoverIndex = i; setSBState((){}); }
+          if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+            Future.microtask(apply);
+          } else {
+            WidgetsBinding.instance.addPostFrameCallback((_) => apply());
+          }
+        }
 
   return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -104,8 +114,8 @@ class DaysPerWeekMeter extends StatelessWidget {
                               : (isHover ? FontWeight.w600 : FontWeight.w400);
 
                           return MouseRegion(
-                            onEnter: (_) => setSBState(() => hoverIndex = i),
-                            onExit: (_) => setSBState(() => hoverIndex = null),
+                            onEnter: (_) => setHover(i, setSBState),
+                            onExit: (_) => setHover(null, setSBState),
                             cursor: SystemMouseCursors.click,
                             child: GestureDetector(
                               behavior: HitTestBehavior.opaque,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_colors.dart';
 import '../models/shopping_list_item.dart';
 import '../services/shopping_list_service.dart';
@@ -9,6 +10,8 @@ import '../widgets/profile_sheet.dart';
 import 'achievements_screen.dart';
 import 'chatbot_screen.dart';
 import '../design_tokens/color_tokens.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:developer' as developer;
 
 class ShoppingListScreen extends StatefulWidget {
   const ShoppingListScreen({super.key});
@@ -24,21 +27,32 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   bool _loading = true;
   bool _error = false;
   final Set<String?> _recentlyAddedIds = {}; // highlight set
+  RealtimeChannel? _channel; // realtime subscription
 
   @override
   void initState() {
     super.initState();
     // Defer service lookup to after first frame to ensure InheritedWidget present
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _service = AppServicesScope.of(context)!.shoppingListService;
+      final scope = AppServicesScope.of(context);
+      if (scope == null) {
+        developer.log('AppServicesScope not found in context; falling back to new ShoppingListService()', name: 'ShoppingList');
+        _service = ShoppingListService();
+      } else {
+        _service = scope.shoppingListService;
+      }
       _load();
+  _subscribe();
     });
   }
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = false; });
     try {
-  final data = await _service.getShoppingList();
+      developer.log('Loading shopping list', name: 'ShoppingList');
+    developer.log('Current user: ' + (Supabase.instance.client.auth.currentUser?.id ?? 'NULL'), name: 'ShoppingList');
+	  final data = await _service.getShoppingList(mergeDuplicates: true);
+      developer.log('Loaded ${data.length} items (merged)', name: 'ShoppingList');
       if (!mounted) return;
       setState(() {
         _items
@@ -46,7 +60,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           ..addAll(data);
         _loading = false;
       });
-    } catch (_) {
+    } catch (e, st) {
+      developer.log('Error loading shopping list', name: 'ShoppingList', error: e, stackTrace: st);
       if (!mounted) return;
       setState(() { _loading = false; _error = true; });
     }
@@ -87,6 +102,11 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           MaterialPageRoute(builder: (context) => const AchievementsScreen()),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            tooltip: 'Share List',
+            onPressed: _shareList,
+          ),
           IconButton(
             icon: Icon(
               _showCompleted ? Icons.check_box : Icons.check_box_outline_blank,
@@ -408,5 +428,73 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     setState(() {
       _items.sort((a, b) => a.name.compareTo(b.name));
     });
+  }
+
+  void _subscribe() {
+    if (_channel != null) return;
+    _channel = Supabase.instance.client.channel('public:shopping_list');
+    _channel!
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'shopping_list',
+          callback: (payload) {
+            _load(); // simple full refresh; could optimize by diff
+          },
+        )
+        .subscribe();
+  }
+
+  @override
+  void dispose() {
+    _channel?.unsubscribe();
+    super.dispose();
+  }
+
+  Future<void> _shareList() async {
+    // Use current filtered (respect show completed flag), but group by category for readability
+    final buffer = StringBuffer();
+    final itemsToShare = _filteredItems.where((i) => !i.isChecked).toList();
+    if (itemsToShare.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nothing to share')));
+      return;
+    }
+    // Group by category
+    final Map<String, List<ShoppingListItem>> byCat = {};
+    for (final it in itemsToShare) {
+      byCat.putIfAbsent(it.category, () => []).add(it);
+    }
+    final cats = byCat.keys.toList()..sort();
+    buffer.writeln('Grocery List');
+    buffer.writeln('');
+    for (final cat in cats) {
+      buffer.writeln('=== $cat ===');
+      final catItems = byCat[cat]!;
+      catItems.sort((a,b)=>a.name.compareTo(b.name));
+        for (final it in catItems) {
+          String qty;
+          if (it.quantity == it.quantity.roundToDouble()) {
+            qty = it.quantity.round().toString();
+          } else {
+            // Trim trailing zeros safely
+            qty = it.quantity.toStringAsFixed(2);
+            if (qty.contains('.')) {
+              qty = qty.replaceFirst(RegExp(r'0+ ?$', multiLine: false), '');
+              qty = qty.replaceFirst(RegExp(r'\.$'), '');
+            }
+          }
+          final qtyStr = it.unit.isNotEmpty ? '$qty ${it.unit}' : qty;
+          final showQty = it.quantity != 1 || it.unit.isNotEmpty;
+            buffer.writeln('- ${it.name}${showQty ? ' ($qtyStr)' : ''}${it.source != 'manual' ? ' [${it.source}]' : ''}');
+      }
+      buffer.writeln('');
+    }
+    final text = buffer.toString().trim();
+    try {
+      await Share.share(text, subject: 'Grocery List');
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Share failed')));
+    }
   }
 }

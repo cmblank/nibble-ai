@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform, kIsWeb;
 import '../design_tokens/color_tokens.dart';
 
@@ -30,6 +31,17 @@ class _CategoryChipState extends State<CategoryChip> {
       defaultTargetPlatform == TargetPlatform.linux ||
       defaultTargetPlatform == TargetPlatform.windows;
 
+  void _setHoverDeferred(bool value) {
+    if (!_hoverEnabled || _hover == value || !mounted) return;
+    // Defer to avoid triggering setState during device update phase (mouse tracker assertion)
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      // schedule microtask to exit pointer handler
+      Future.microtask(() { if (mounted) setState(()=> _hover = value); });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_){ if (mounted) setState(()=> _hover = value); });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final selected = widget.selected;
@@ -48,12 +60,8 @@ class _CategoryChipState extends State<CategoryChip> {
     }
 
     return MouseRegion(
-      onEnter: (_) {
-        if (_hoverEnabled) setState(() => _hover = true);
-      },
-      onExit: (_) {
-        if (_hoverEnabled) setState(() => _hover = false);
-      },
+      onEnter: (_) => _setHoverDeferred(true),
+      onExit: (_) => _setHoverDeferred(false),
       child: InkWell(
         onTap: widget.onTap,
         borderRadius: BorderRadius.circular(8),

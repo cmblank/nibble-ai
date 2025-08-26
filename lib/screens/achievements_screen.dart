@@ -44,8 +44,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> with TickerProv
   late final TabController _tabs;
   bool _loading = true;
   String? _error;
-  List<Map<String, dynamic>> _completed = const [];
-  List<Map<String, dynamic>> _inProgress = const [];
+  // Mutable lists (avoid const so incremental mutation is safe before full reload)
+  List<Map<String, dynamic>> _completed = [];
+  List<Map<String, dynamic>> _inProgress = [];
   bool _expandCurrentMonth = true;
   bool _expandOngoing = true;
 

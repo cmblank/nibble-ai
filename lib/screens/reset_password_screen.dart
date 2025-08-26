@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_colors.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -33,7 +33,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return;
     }
     setState(() => _loading = true);
-    final ok = await SupabaseService.updatePassword(newPassword: a);
+    bool ok = false;
+    try {
+      await Supabase.instance.client.auth.updateUser(UserAttributes(password: a));
+      ok = true;
+    } catch (e) {
+      _show('Error: $e');
+    }
     if (!mounted) return;
     setState(() => _loading = false);
     if (ok) {

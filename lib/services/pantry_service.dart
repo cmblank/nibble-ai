@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/pantry_enums.dart';
 import '../models/pantry_item.dart';
 import 'supabase_service.dart';
+import 'household_service.dart';
 
 /// PantryService provides CRUD operations for pantry items using Supabase.
 /// It maps between the app's PantryItem model and the `user_pantry` table.
@@ -30,17 +31,14 @@ class PantryService {
     }
   }
 
-  /// Fetch all pantry rows for the current user and map to PantryItem.
+  /// Fetch pantry rows for current household (household_id now required).
   static Future<List<PantryItem>> fetchItems() async {
     final uid = _userId;
     if (uid == null) return [];
+    final hid = await HouseholdService.ensureHousehold();
     try {
-      final response = await _client
-          .from('user_pantry')
-          .select()
-          .eq('user_id', uid)
-          .order('created_at', ascending: false);
-
+      if (hid == null) return [];
+      final response = await _client.from('user_pantry').select().eq('household_id', hid).order('created_at', ascending: false);
       final rows = List<Map<String, dynamic>>.from(response);
       return rows.map(_fromRow).toList();
     } catch (e, st) {
@@ -54,13 +52,15 @@ class PantryService {
     final uid = _userId;
     if (uid == null) return null;
     try {
+  final hid = await HouseholdService.ensureHousehold();
       final payload = _toRow(uid, item);
-      final response = await _client
-          .from('user_pantry')
-          .insert(payload)
-          .select()
-          .single();
-      return _fromRow(Map<String, dynamic>.from(response));
+  if (hid == null) return null; // strict requirement
+  payload['household_id'] = hid; payload['added_by'] = uid;
+      final rows = await _client.from('user_pantry').insert(payload).select().limit(1);
+      if (rows.isNotEmpty) {
+        return _fromRow(Map<String,dynamic>.from(rows.first));
+      }
+      return null;
     } catch (e, st) {
       developer.log('addItem failed', error: e, stackTrace: st, name: 'PantryService');
       return null;
@@ -72,12 +72,8 @@ class PantryService {
     final uid = _userId;
     if (uid == null || item.id == null) return false;
     try {
-      final payload = _toRow(uid, item)
-        ..remove('user_id'); // don't attempt to update ownership
-    await _client
-          .from('user_pantry')
-          .update(payload)
-      .eq('id', item.id!);
+  final payload = _toRow(uid, item)..remove('user_id')..remove('household_id')..remove('added_by');
+      await _client.from('user_pantry').update(payload).eq('id', item.id!);
       return true;
     } catch (e, st) {
       developer.log('updateItem failed', error: e, stackTrace: st, name: 'PantryService');

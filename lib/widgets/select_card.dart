@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Figma-derived selectable card with radio/check visual.
 /// States: normal, hover, selected. Radius 8. Border 1px (2px when selected).
@@ -29,6 +30,14 @@ class SelectCard extends StatefulWidget {
 
 class _SelectCardState extends State<SelectCard> {
   bool _hovered = false;
+  void _setHoverDeferred(bool v) {
+    if (_hovered == v || !mounted) return;
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      Future.microtask(() { if (mounted) setState(()=> _hovered = v); });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_){ if (mounted) setState(()=> _hovered = v); });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +57,8 @@ class _SelectCardState extends State<SelectCard> {
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      onEnter: (_) => _setHoverDeferred(true),
+      onExit: (_) => _setHoverDeferred(false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(

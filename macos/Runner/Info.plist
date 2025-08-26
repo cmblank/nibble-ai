@@ -40,6 +40,14 @@
 				<string>io.supabase.nibbleai</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>nibble</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>nibble</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
