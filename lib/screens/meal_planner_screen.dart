@@ -563,7 +563,6 @@ class _MealPlannerState extends State<_MealPlanner> {
     return Scaffold(
       appBar: NibbleAppBar(
         currentTab: NibbleTab.planning,
-  showBack: true,
   onChatTap: (_) => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen())),
   onProfileTap: () => showProfileSheet(context),
       ),
