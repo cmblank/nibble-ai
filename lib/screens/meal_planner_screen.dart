@@ -291,7 +291,7 @@ class _MealPlannerState extends State<_MealPlanner> {
     final dinnerCount = _plan.where((e)=> e.mealType==MealType.dinner).length;
     final showRebalance = dinnerCount != _desiredDinnersCache;
     return SizedBox(
-      height: 80,
+      height: 100, // increased to prevent RenderFlex overflow after adding Plan button
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

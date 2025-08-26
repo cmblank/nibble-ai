@@ -109,60 +109,73 @@ class _PlanningSwipeScreenState extends State<PlanningSwipeScreen> with SingleTi
     final filled = _nextSlot.clamp(0,7);
     return Scaffold(
       appBar: AppBar(title: const Text('Plan Dinners')),
-      body: _loading ? const Center(child: CircularProgressIndicator()) : Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16,12,16,4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Week ${_monday.month}/${_monday.day}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text('$filled / 7 planned', style: const TextStyle(fontSize: 12)),
-                TextButton(onPressed: _load, child: const Text('Refresh')),
-              ],
-            ),
-          ),
-          Expanded(
-            child: _index >= _stack.length ? _empty() : Stack(
-              alignment: Alignment.center,
-              children: () {
-                const maxVisible = 4;
-                final remaining = _stack.length - _index;
-                final count = remaining > maxVisible ? maxVisible : remaining;
-                final cards = <Widget>[];
-                for (int depth = count -1; depth >=0; depth--) {
-                  final sr = _stack[_index + depth];
-                  cards.add(_card(sr, depth));
+      body: SafeArea(
+        child: _loading 
+            ? const Center(child: CircularProgressIndicator())
+            : LayoutBuilder(builder: (ctx, constraints){
+                final content = Column(
+                  children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16,12,16,4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Week ${_monday.month}/${_monday.day}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text('$filled / 7 planned', style: const TextStyle(fontSize: 12)),
+                        TextButton(onPressed: _load, child: const Text('Refresh')),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: _index >= _stack.length ? _empty() : Stack(
+                      alignment: Alignment.center,
+                      children: () {
+                        const maxVisible = 4;
+                        final remaining = _stack.length - _index;
+                        final count = remaining > maxVisible ? maxVisible : remaining;
+                        final cards = <Widget>[];
+                        for (int depth = count -1; depth >=0; depth--) {
+                          final sr = _stack[_index + depth];
+                          cards.add(_card(sr, depth));
+                        }
+                        // Progress badge
+                        cards.add(Positioned(top: 8, right: 8, child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.55), borderRadius: BorderRadius.circular(12)),
+                          child: Text('Slots: $filled/7', style: const TextStyle(fontSize: 11, color: Colors.white)),
+                        )));
+                        return cards;
+                      }(),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24,8,24,8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _circleBtn(Icons.close, Colors.red, ()=> _swipe(false)),
+                        _circleBtn(Icons.check, Colors.green, ()=> _swipe(true)),
+                      ],
+                    ),
+                  ),
+                  if (filled >=7)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ElevatedButton(onPressed: () async {
+                        if (!mounted) return; 
+                        await Navigator.push(context, MaterialPageRoute(builder: (_)=> const MealPlannerScreen()));
+                      }, child: const Text('View Plan')),
+                    ),
+                  ],
+                );
+                if (constraints.maxHeight < 620) {
+                  return SingleChildScrollView(child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(child: content),
+                  ));
                 }
-                // Progress badge
-                cards.add(Positioned(top: 8, right: 8, child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.55), borderRadius: BorderRadius.circular(12)),
-                  child: Text('Slots: $filled/7', style: const TextStyle(fontSize: 11, color: Colors.white)),
-                )));
-                return cards;
-              }(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24,8,24,32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _circleBtn(Icons.close, Colors.red, ()=> _swipe(false)),
-                _circleBtn(Icons.check, Colors.green, ()=> _swipe(true)),
-              ],
-            ),
-          ),
-          if (filled >=7)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: ElevatedButton(onPressed: () async {
-                if (!mounted) return; 
-                await Navigator.push(context, MaterialPageRoute(builder: (_)=> const MealPlannerScreen()));
-              }, child: const Text('View Plan')),
-            ),
-        ],
+                return content;
+              }),
       ),
     );
   }
